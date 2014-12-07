@@ -34,3 +34,6 @@ DEPENDPATH+=/usr/local/Cellar/glew/1.11.0/include
 OTHER_FILES += \
     shaders/shader.frag \
     shaders/shader.vert
+
+RESOURCES += \
+    resources.qrc

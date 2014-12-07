@@ -1,6 +1,7 @@
 #include "ResourceLoader.h"
 #include <QFile>
 #include <QTextStream>
+#include <iostream>
 
 ResourceLoader::ResourceLoader()
 {

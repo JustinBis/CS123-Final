@@ -27,6 +27,17 @@ void View::initializeGL()
     // method. Before this method is called, there is no active OpenGL
     // context and all OpenGL calls have no effect.
 
+    // Set up the OpenGL context with GLEW
+    //initialize glew
+    glewExperimental = GL_TRUE;
+    GLenum err = glewInit();
+    glGetError(); // Clear errors after call to glewInit
+    if (GLEW_OK != err)
+    {
+      // Problem: glewInit failed, something is seriously wrong.
+      fprintf(stderr, "Error initializing glew: %s\n", glewGetErrorString(err));
+    }
+
     // Start a timer that will try to get 60 frames per second (the actual
     // frame rate depends on the operating system and other running programs)
     time.start();
@@ -112,6 +123,8 @@ void View::initializeGL()
 
 void View::paintGL()
 {
+    // Draw a grey background
+    glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // TODO: Implement the demo rendering here

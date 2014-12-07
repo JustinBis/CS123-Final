@@ -5,6 +5,12 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    // Setup the GL format
+    QGLFormat qglFormat;
+    qglFormat.setVersion(3, 2);
+    qglFormat.setProfile(QGLFormat::CoreProfile);
+    qglFormat.setSampleBuffers(true);
+
     ui->setupUi(this);
 }
 
