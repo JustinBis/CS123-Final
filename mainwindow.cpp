@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QGLFormat qglFormat;
     qglFormat.setVersion(3, 2);
     qglFormat.setProfile(QGLFormat::CoreProfile);
+    QGLFormat::setDefaultFormat(qglFormat);
     qglFormat.setSampleBuffers(true);
 
     ui->setupUi(this);

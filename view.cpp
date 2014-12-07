@@ -131,6 +131,10 @@ void View::paintGL()
 
     // Draw the example triangle to screen
     glBindVertexArray(m_vaoID);
+
+    // TODO: apply a material and use a camera to pass variables to the shader
+    // That way we actually draw something
+    // Can set color in fragment shader for debugging
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
 }
