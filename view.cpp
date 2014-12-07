@@ -82,10 +82,14 @@ void View::keyPressEvent(QKeyEvent *event)
     if (event->key() == Qt::Key_Escape) QApplication::quit();
 
     // TODO: Handle keyboard presses here
+
+    // Look for wasd keys for camera movement
 }
 
 void View::keyReleaseEvent(QKeyEvent *event)
 {
+
+    // Unset the camera movement
 }
 
 void View::tick()
