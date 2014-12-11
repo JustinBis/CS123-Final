@@ -12,6 +12,34 @@
 
 #include "camera.h"
 
+/*
+ * Data for lights in a scene
+ * From CS123SceneData.h in the projects
+ */
+#define MAX_NUM_LIGHTS 10
+// Enumeration for light types.
+enum LightType {
+    LIGHT_POINT, LIGHT_DIRECTIONAL, LIGHT_SPOT, LIGHT_AREA
+};
+// Struct for a single light
+struct CS123SceneLightData
+{
+   int id;
+   LightType type;
+
+   float color[4];
+   glm::vec3 function;  // Attenuation function
+
+   glm::vec4 pos;       // Not applicable to directional lights
+   glm::vec4 dir;       // Not applicable to point lights
+
+   float radius;        // Only applicable to spot lights
+   float penumbra;      // Only applicable to spot lights
+   float angle;         // Only applicable to spot lights
+
+   float width, height; // Only applicable to area lights
+};
+
 class View : public QGLWidget
 {
     Q_OBJECT
@@ -41,6 +69,10 @@ private:
     void rotateCamera(const float &seconds);
 
     Camera* m_camera;
+
+    // Lighting functions
+    void clearLights();
+    void setLight(const CS123SceneLightData &light);
 
     // The ID of the main vao used for drawing
     GLuint m_vaoID;

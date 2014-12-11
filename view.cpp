@@ -142,6 +142,19 @@ void View::paintGL()
     // Use the shader program
     glUseProgram(m_shader);
 
+    // Set up the lighting
+    clearLights();
+
+    // For testing, use a single standard light
+    glm::vec4 lightDirection = glm::normalize(glm::vec4(1.f, -1.f, -1.f, 0.f));
+    CS123SceneLightData light;
+    memset(&light, 0, sizeof(light));
+    light.type = LIGHT_DIRECTIONAL;
+    light.dir = lightDirection;
+    light.color[0] = light.color[1] = light.color[2] = 1;
+    light.id = 0;
+    setLight(light);
+
     // Set the uniforms
     glUniform1i(m_uniformLocs["useLighting"], true);
     glUniform1i(m_uniformLocs["useArrowOffsets"], GL_FALSE);
@@ -191,6 +204,67 @@ void View::paintGL()
 
     // Unbind the shader
     glUseProgram(m_shader);
+}
+
+/**
+ * @brief View::clearLights clears the lights in the shader
+ * Totally not lifted from OpenGLScene.cpp in the projects
+ */
+void View::clearLights()
+{
+    for (int i = 0; i < MAX_NUM_LIGHTS; i++) {
+        std::ostringstream os;
+        os << i;
+        std::string indexString = "[" + os.str() + "]"; // e.g. [0], [1], etc.
+        glUniform3f(glGetUniformLocation(m_shader, ("lightColors" + indexString).c_str()), 0, 0, 0);
+    }
+}
+
+/**
+ * @brief View::setLight sets the passed light in the shader
+ * @param light
+ */
+void View::setLight(const CS123SceneLightData &light)
+{
+    std::ostringstream os;
+    os << light.id;
+    std::string indexString = "[" + os.str() + "]"; // e.g. [0], [1], etc.
+
+    bool ignoreLight = false;
+
+    GLint lightType;
+    switch(light.type)
+    {
+    case LIGHT_POINT:
+        lightType = 0;
+        glUniform3fv(glGetUniformLocation(m_shader, ("lightPositions" + indexString).c_str()), 1,
+                glm::value_ptr(light.pos));
+        break;
+    case LIGHT_DIRECTIONAL:
+        lightType = 1;
+        glUniform3fv(glGetUniformLocation(m_shader, ("lightDirections" + indexString).c_str()), 1,
+                glm::value_ptr(glm::normalize(light.dir)));
+        break;
+    default:
+        ignoreLight = true; // Light type not supported
+        break;
+    }
+
+    float color[3];
+    color[0] = light.color[0];
+    color[1] = light.color[1];
+    color[2] = light.color[2];
+    // Set the light to black if we're ignoring it
+    if (ignoreLight)
+    {
+        color[0] = color[1] = color[2] = 0.0f;
+    }
+
+    glUniform1i(glGetUniformLocation(m_shader, ("lightTypes" + indexString).c_str()), lightType);
+    glUniform3fv(glGetUniformLocation(m_shader, ("lightColors" + indexString).c_str()),
+                1, color);
+    glUniform3f(glGetUniformLocation(m_shader, ("lightAttenuations" + indexString).c_str()),
+            light.function.x, light.function.y, light.function.z);
 }
 
 void View::resizeGL(int w, int h)

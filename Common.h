@@ -11,6 +11,7 @@
 #include <string.h>
 #include <assert.h>
 #include <iostream>
+#include <sstream>
 #include <QMessageBox>
 #include <vector>
 
