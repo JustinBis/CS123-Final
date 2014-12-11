@@ -133,7 +133,7 @@ void View::initializeGL()
 
 void View::paintGL()
 {
-    // Draw a grey background
+    // Draw a grey background so we can see unlight objects
     glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -143,7 +143,7 @@ void View::paintGL()
     glUseProgram(m_shader);
 
     // Set the uniforms
-    glUniform1i(m_uniformLocs["useLighting"], false);
+    glUniform1i(m_uniformLocs["useLighting"], true);
     glUniform1i(m_uniformLocs["useArrowOffsets"], GL_FALSE);
     glUniformMatrix4fv(m_uniformLocs["p"], 1, GL_FALSE,
             glm::value_ptr(m_camera->getProjectionMatrix()));
@@ -152,6 +152,33 @@ void View::paintGL()
     glUniformMatrix4fv(m_uniformLocs["m"], 1, GL_FALSE,
             glm::value_ptr(glm::mat4()));
     glUniform3f(m_uniformLocs["allBlack"], 1, 1, 1);
+
+    // Apply the default material for an object
+    // All are specified in RGB order
+    float ambient[3] = {0.2f, 0.1f, 0.0f};
+    float diffuse[3] = {1.0f, 0.5f, 0.0f};
+    float specular[3] = {1.0f, 1.0f, 1.0f};
+    float shininess = 64.0f;
+
+    glUniform3fv(m_uniformLocs["ambient_color"], 1, ambient);
+    glUniform3fv(m_uniformLocs["diffuse_color"], 1, diffuse);
+    glUniform3fv(m_uniformLocs["specular_color"], 1, specular);
+    glUniform1f(m_uniformLocs["shininess"], shininess);
+    /*
+     * Don't use textures yet
+    if (material.textureMap && material.textureMap->isUsed && material.textureMap->texid) {
+        glUniform1i(m_uniformLocs["useTexture"], 1);
+        glUniform1i(m_uniformLocs["tex"], 1);
+        glUniform1f(m_uniformLocs["blend"], 1.0f);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, material.textureMap->texid);
+        glActiveTexture(GL_TEXTURE0);
+    } else {
+    */
+
+    // Don't use textures yet
+    glUniform1i(m_uniformLocs["useTexture"], 0);
 
     // Draw the example triangle to screen
     glBindVertexArray(m_vaoID);
