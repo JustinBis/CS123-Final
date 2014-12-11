@@ -8,6 +8,10 @@
 #include <QTime>
 #include <QTimer>
 
+#include "Common.h"
+
+#include "camera.h"
+
 class View : public QGLWidget
 {
     Q_OBJECT
@@ -31,6 +35,10 @@ private:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 
+    void translateCamera(float seconds);
+
+    Camera* m_camera;
+
     // The ID of the main vao used for drawing
     GLuint m_vaoID;
 
@@ -39,6 +47,9 @@ private:
 
     // A mapping of strings to their associated uniform locations in the shader
     std::map<std::string, GLint> m_uniformLocs;
+
+    // A mapping of Qt keys and if they are pressed or not
+    std::map<int, bool> m_keys;
 
 private slots:
     void tick();

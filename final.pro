@@ -10,16 +10,21 @@ DEPENDPATH += glm lib
 SOURCES += main.cpp \
     mainwindow.cpp \
     view.cpp \
-    lib/ResourceLoader.cpp
+    lib/ResourceLoader.cpp \
+    camera.cpp
 
 HEADERS += mainwindow.h \
     view.h \
-    lib/ResourceLoader.h
+    lib/ResourceLoader.h \
+    camera.h \
+    Common.h
 
 FORMS += mainwindow.ui
 
+
 # For local development
-QMAKE_CXXFLAGS += -std=c++11
+#QMAKE_CXXFLAGS += -std=c++11 # Why does this break glm?
+#QMAKE_CXXFLAGS += -stdlib=libc++ # Use Clang's c++11 library # Or don't, thanks Apple
 QMAKE_CFLAGS_X86_64 += -mmacosx-version-min=10.7
 QMAKE_CXXFLAGS_X86_64 = $$QMAKE_CFLAGS_X86_64
 

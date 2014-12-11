@@ -32,7 +32,11 @@
 #include "setup.hpp"
 
 #if GLM_HAS_EXTENDED_INTEGER_TYPE
+#ifdef __APPLE__
+#   include <tr1/cstdint>
+#else
 #	include <cstdint>
+#endif
 #endif
 
 namespace glm{
