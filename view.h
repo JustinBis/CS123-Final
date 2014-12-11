@@ -35,7 +35,10 @@ private:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 
-    void translateCamera(float seconds);
+    // Camera movement
+    void moveCamera(const float &seconds);
+    void translateCamera(const float &seconds);
+    void rotateCamera(const float &seconds);
 
     Camera* m_camera;
 

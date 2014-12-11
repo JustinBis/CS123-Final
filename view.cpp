@@ -91,11 +91,18 @@ void View::initializeGL()
         1, -1, 0, // Pos 2
         0, 0, 1, // Normal 2
         0, 1, 0, // Pos 3
-        0, 0, 1 // Normal 3
+        0, 0, 1, // Normal 3
+        // START TRIANGLE TWO
+        0, 0, 0,
+        0, 0, 1,
+        5, 0, 0,
+        0, 0, 1,
+        5, 5, 0,
+        0, 0, 1
     };
 
     // Pass the vertex data to OpenGL
-    glBufferData(GL_ARRAY_BUFFER, 3 * 6 * sizeof(GLfloat), vertexData, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 6 * 6 * sizeof(GLfloat), vertexData, GL_STATIC_DRAW);
 
     // Tell the VAO about this buffer
     glEnableVertexAttribArray(glGetAttribLocation(m_shader, "position"));
@@ -152,7 +159,7 @@ void View::paintGL()
     // TODO: apply a material and use a camera to pass variables to the shader
     // That way we actually draw something
     // Can set color in fragment shader for debugging
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 
     // Unbind the shader
@@ -183,6 +190,13 @@ void View::mouseMoveEvent(QMouseEvent *event)
     QCursor::setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
 
     // TODO: Handle mouse movements here
+
+    // Update the camera's rotation based on mouse movements
+    float cameraRotation = 1.0f / 16.0f;
+
+    m_camera->rotateU(cameraRotation * deltaY);
+    m_camera->rotateV(cameraRotation * deltaX);
+
 }
 
 void View::mouseReleaseEvent(QMouseEvent *event)
@@ -193,67 +207,78 @@ void View::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape) QApplication::quit();
 
-    // TODO: Handle keyboard presses here
-
-    // Look for wasd keys for camera movement
-    /*
-    switch(event->key())
-    {
-        case Qt::Key_W:
-            m_keys.w = true;
-            break;
-        case Qt::Key_A:
-            m_keys.a = true;
-            break;
-        case Qt::Key_S:
-            m_keys.s = true;
-            break;
-        case Qt::Key_S:
-            m_keys.d = true;
-            break;
-        default:
-            break;
-    }
-    */
-
+    // Set the key as pressed
     m_keys[event->key()] = true;
 }
 
 void View::keyReleaseEvent(QKeyEvent *event)
 {
-    // Unset the camera movement
+    // Unset the key
     m_keys[event->key()] = false;
 }
 
 /**
- * @brief View::translateCamera
+ * @brief View::moveCamera
+ * @param seconds number of seconds since the last tick (frame update)
  * Updates the camera's location based on the pressed keys and the passsed number of seconds
  */
-void View::translateCamera(float seconds)
+void View::moveCamera(const float& seconds)
+{
+    // Move the camera along the xz plane
+    translateCamera(seconds);
+
+    // Rotate the camera around the y axis
+    rotateCamera(seconds);
+}
+
+/**
+ * @brief View::translateCamera moves the camera along the xz plane
+ * @param seconds number of seconds since the last tick (frame update)
+ */
+void View::translateCamera(const float& seconds)
 {
     glm::vec4 vec = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
     // Speed of the camera's movement
     float movementSpeed = seconds * 2.0f;
 
+    // W and S translate the z plane
     if(m_keys[Qt::Key_W])
     {
-        vec.x += movementSpeed;
+        vec.z -= movementSpeed;
     }
     if(m_keys[Qt::Key_S])
     {
-        vec.x -= movementSpeed;
+        vec.z += movementSpeed;
     }
+    // A and D translate the x plane
     if(m_keys[Qt::Key_A])
     {
-        vec.y -= movementSpeed;
+        vec.x -= movementSpeed;
     }
     if(m_keys[Qt::Key_D])
     {
-        vec.y += movementSpeed;
+        vec.x += movementSpeed;
     }
 
     m_camera->translate(vec);
+}
+
+/**
+ * @brief View::translateCamera moves the camera along the xz plane
+ * @param seconds number of seconds since the last tick (frame update)
+ */
+void View::rotateCamera(const float& seconds)
+{
+    float degrees = seconds * 15.0f;
+    if(m_keys[Qt::Key_Q])
+    {
+        m_camera->rotateV(degrees);
+    }
+    if(m_keys[Qt::Key_E])
+    {
+        m_camera->rotateV(-degrees);
+    }
 }
 
 void View::tick()
@@ -264,7 +289,7 @@ void View::tick()
     // TODO: Implement the demo update here
 
     // Move the camera
-    translateCamera(seconds);
+    moveCamera(seconds);
 
     // Flag this view for repainting (Qt will call paintGL() soon after)
     update();
