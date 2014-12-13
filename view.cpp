@@ -41,6 +41,7 @@ View::~View()
 
 void View::initializeGL()
 {
+    std::cout << "Initilizing OpenGL" << std::endl;
     // All OpenGL initialization *MUST* be done during or after this
     // method. Before this method is called, there is no active OpenGL
     // context and all OpenGL calls have no effect.
@@ -70,6 +71,7 @@ void View::initializeGL()
 
 
     // Set up the shaders
+    std::cout << "Loading Shaders" << std::endl;
     m_shader = ResourceLoader::loadShaders(
             ":/shaders/default.vert",
             ":/shaders/default.frag");
@@ -89,6 +91,8 @@ void View::initializeGL()
     m_uniformLocs["blend"] = glGetUniformLocation(m_shader, "blend");
 
     // For testing, draw a simple triangle to screen
+
+    std::cout << "Generating Buffers" << std::endl;
 
     // Generate and bind the VAO
     glGenVertexArrays(1, &m_vaoID);
@@ -138,10 +142,12 @@ void View::initializeGL()
 //                (void *)(sizeof(GLfloat) * 3) // Start location offset in the buffer
 //                );
 
-    // Create the cylinder using that library
+    // Create the cylinder using the glh library
+    std::cout << "Creating unit cylinder" << std::endl;
     initCylinder();
 
     // Buffer the cylinder data
+    std::cout << "Buffering data" << std::endl;
     glBufferData(GL_ARRAY_BUFFER, m_cylinder.VertexCount * sizeof(GLHVertex_VNT), m_cylinder.pVertex, GL_STATIC_DRAW);
 
     // Tell the VAO about this buffer
@@ -163,6 +169,14 @@ void View::initializeGL()
                     sizeof(GLHVertex_VNT), // Stride between entries
                     (void *)(3 * sizeof(float)) // Start location offset in the buffer
                     );
+    glVertexAttribPointer(
+                    glGetAttribLocation(m_shader, "texCoord"),
+                    2, // Num coords per position
+                    GL_FLOAT, // Type of data
+                    GL_FALSE, // Normalized?
+                    sizeof(GLHVertex_VNT), // Stride between entries
+                    (void *)(6 * sizeof(float)) // Start location offset in the buffer
+                    );
 
     // Unbind the vertex buffer
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -173,13 +187,18 @@ void View::initializeGL()
     // The indicies are unsigned shorts
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_cylinder.TotalIndex * sizeof(unsigned short), m_cylinder.pIndex16Bit, GL_STATIC_DRAW);
 
-    glBindVertexArray(0);
+    // Load the textures
+    std::cout << "Loading Textures" << std::endl;
+    glEnable(GL_TEXTURE_2D);
+    m_pineTexID = loadTexture(":/textures/pine.jpg");
 
-    // Init the glh library
-    //glhInitLibrary();
+    // Unbind the vertex array
+    glBindVertexArray(0);
 
     // Mark the initilization as done
     m_OpenGLDidInit = true;
+
+    std::cout << "Done Initilizing!" << std::endl;
 }
 
 
@@ -198,6 +217,15 @@ void View::initCylinder()
     m_cylinder.ScaleFactorS[0]=m_cylinder.ScaleFactorT[0]=1.0;
 
     glhCreateCylinderf2(&m_cylinder);
+
+    /*
+    // Print out the first few texture coords
+    GLHVertex_VNT *verts = (GLHVertex_VNT *)m_cylinder.pVertex;
+    for(int i = 0; i < 500; i += 25)
+    {
+        std::cout << "Tex: s0: " << verts[i].s0 << " t0:" << verts[i].t0 << std::endl;
+    }
+    */
 }
 
 void View::paintGL()
@@ -225,7 +253,7 @@ void View::paintGL()
     setLight(light);
 
     // Set the uniforms
-    glUniform1i(m_uniformLocs["useLighting"], true);
+    glUniform1i(m_uniformLocs["useLighting"], false);
     glUniform1i(m_uniformLocs["useArrowOffsets"], GL_FALSE);
     glUniformMatrix4fv(m_uniformLocs["p"], 1, GL_FALSE,
             glm::value_ptr(m_camera->getProjectionMatrix()));
@@ -246,21 +274,16 @@ void View::paintGL()
     glUniform3fv(m_uniformLocs["diffuse_color"], 1, diffuse);
     glUniform3fv(m_uniformLocs["specular_color"], 1, specular);
     glUniform1f(m_uniformLocs["shininess"], shininess);
-    /*
-     * Don't use textures yet
-    if (material.textureMap && material.textureMap->isUsed && material.textureMap->texid) {
-        glUniform1i(m_uniformLocs["useTexture"], 1);
-        glUniform1i(m_uniformLocs["tex"], 1);
-        glUniform1f(m_uniformLocs["blend"], 1.0f);
 
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, material.textureMap->texid);
-        glActiveTexture(GL_TEXTURE0);
-    } else {
-    */
+    // Set up the texture
+    glEnable(GL_TEXTURE_2D);
+    glUniform1i(m_uniformLocs["useTexture"], 1);
+    glUniform1i(m_uniformLocs["tex"], 1);
+    glUniform1f(m_uniformLocs["blend"], 1.0f);
 
-    // Don't use textures yet
-    glUniform1i(m_uniformLocs["useTexture"], 0);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_pineTexID);
+    glActiveTexture(GL_TEXTURE0);
 
     // Draw the example triangle to screen
     glBindVertexArray(m_vaoID);
@@ -273,9 +296,6 @@ void View::paintGL()
 
 
     // Draw the cylinder
-    // Ignore the texture for now
-    //glEnable(GL_TEXTURE_2D);
-    //glBindTexture(GL_TEXTURE_2D, TextureID);
 
     // Render the entire cylinder at once
     glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
@@ -463,6 +483,56 @@ void View::rotateCamera(const float& seconds)
     {
         m_camera->rotateV(-degrees);
     }
+}
+
+/**
+ * @brief View::loadTexture Loads the given texture for use in OpenGL
+ * @param filename the path to the texture
+ * @return the openGL texture ID for the loaded texture
+ */
+GLuint View::loadTexture(std::string filename)
+{
+    QString qfilename = QString::fromStdString(filename);
+    // Make sure the image file exists
+    QFile file(qfilename);
+    if (!file.exists())
+    {
+        std::cerr << "Warning: loading texture failed. File: " << filename << std::endl;
+        return -1;
+    }
+
+    // Load the file into memory
+    QImage image;
+    image.load(file.fileName());
+    image = image.mirrored(false, true);
+    QImage texture = QGLWidget::convertToGLFormat(image);
+
+    // Generate a new OpenGL texture ID to put our image into
+    GLuint id = 0;
+    glGenTextures(1, &id);
+
+    // Make the texture we just created the new active texture
+    glBindTexture(GL_TEXTURE_2D, id);
+
+    // Copy the image data into the OpenGL texture
+    //gluBuild2DMipmaps(GL_TEXTURE_2D, 3, texture.width(), texture.height(), GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width(), texture.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
+
+    // Set filtering options
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Set coordinate wrapping options
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+    // Unbind the texture
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    std::cout << "Finished loading texture " << filename << std::endl;
+
+    // Return the id
+    return id;
 }
 
 void View::tick()

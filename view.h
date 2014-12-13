@@ -84,12 +84,17 @@ private:
     void clearLights();
     void setLight(const CS123SceneLightData &light);
 
+    // Texture loader
+    GLuint loadTexture(std::string filename);
+
     // The ID of the main vao used for drawing
     GLuint m_vaoID;
     // The buffer with our vertices
     GLuint m_vertexBuffer;
     // The index buffer object
     GLuint m_IBO;
+    // The id of the tree's texture
+    GLuint m_pineTexID;
 
     // The program ID of the OpenGL shader
     GLuint m_shader;
