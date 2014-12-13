@@ -11,7 +11,7 @@
 #include "glhmath.h"
 //#include "MemoryManagement.h"
 //#include "3DGraphicsLibrarySmall.h"
-#include <string>
+#include <string.h>
 
 
 

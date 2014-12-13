@@ -22,6 +22,8 @@
 //Don't put this in the released glhlib.h
 #include "global.h"
 
+#define GLHLIB_API
+
 
 
 #pragma warning(disable: 4244)	//Shut up about double to float casting

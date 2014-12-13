@@ -11,7 +11,7 @@
 //#include "3DGraphicsLibrarySmall.h"
 #include "glh3DGraphics.h"
 
-#include <string>
+#include <string.h>
 
 
 #pragma warning(disable: 4244)	//Shut up about double to float casting
