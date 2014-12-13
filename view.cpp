@@ -144,8 +144,10 @@ void View::initializeGL()
 
     glEnable(GL_DEPTH_TEST);
 
-    // Make a tree
-    generateTree();
+    // Make a tree or three
+    for(int i = 0; i < 3; i++){
+        generateTree();
+    }
 
     // Mark the initilization as done
     m_OpenGLDidInit = true;
@@ -293,8 +295,8 @@ void View::paintGL()
     // Draw the cylinder
 
     // Render the entire cylinder at once
-    glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
-        m_cylinder.TotalIndex, GL_UNSIGNED_SHORT, (void *)0 );
+    //glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
+        //m_cylinder.TotalIndex, GL_UNSIGNED_SHORT, (void *)0 );
 
         for(size_t i = 0; i < m_treeBranches->size(); i++)
         {
@@ -310,7 +312,51 @@ void View::paintGL()
             glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
                     m_cylinder.TotalIndex, GL_UNSIGNED_SHORT, (void *)0 );
         }
+/*
 
+        float arr = {0.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    0.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    0.0, 1.0,
+                    1.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    1.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    0.0, 1.0,
+                    1.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    1.0, 0.0,
+                    1.0, 1.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    1.0, 1.0};
+
+        for(size_t i = 0; i < m_treeLeaves->size(); i++)
+        {
+            // Apply the modeling transformation
+            glUniformMatrix4fv(
+                        m_uniformLocs["m"],
+                        1,
+                        GL_FALSE,
+                        glm::value_ptr(m_treeLeaves->at(i))
+                        );
+
+
+
+            // Draw the square
+            glDrawRangeElements(GL_TRIANGLES,
+                                0,
+                                48,
+                                2,
+                                GL_UNSIGNED_INT,
+
+
+
+                                (void *)0 );
+        }
+*/
     glBindVertexArray(0);
 
     // Unbind the shader

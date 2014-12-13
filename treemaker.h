@@ -28,6 +28,8 @@ protected:
     std::string L_string;
     int L_index;
 
+    float m_x, m_y;
+
     int numIters;
 
     // Only ever use push/pop_front on these, turns them into a stack.

@@ -30,6 +30,7 @@ void TreeMaker::reset(float trunkRadius, std::deque<glm::mat4x4> *shapeTransform
         cycleLString(i);
 
     }
+
 }
 
 void TreeMaker::cycleLString(int iterNum){
@@ -91,6 +92,8 @@ void TreeMaker::makeTree(){
     phi_rotations.push_front(0.0);
     theta_rotations.push_front(0.0);
     branch_size_ratios.push_front(1.0);
+    m_x = randomFloat() * 30.0 - 15.0;
+    m_y = randomFloat() * 30.0 - 15.0;
     handleBranch(glm::mat4x4(1.0));
 }
 
@@ -143,7 +146,10 @@ void TreeMaker::handleBranch(glm::mat4x4 current_total_transformation){
             //        * glm::translate(glm::mat4x4(1.0), glm::vec3(-to_origin));
 
             // Adding the cylinder representing the branch to the sceneview graph.
-            m_shapeTransformations->push_front(branch_trans * scale);
+            m_shapeTransformations->push_front(glm::translate(glm::mat4x4(1.0), glm::vec3(m_x, m_y, 0))
+                        * glm::rotate(glm::mat4x4(1.0), (float)(90.0 * DEG_TO_RAD), glm::vec3(1,0,0)) * branch_trans * scale);
+
+            // * glm::rotate(glm::mat4x4(1.0), (float)(90.0 * DEG_TO_RAD), glm::vec3(1,0,0))
 
             //m_shapeTransformations->push_front(branch_trans * scale * glm::translate(glm::mat4x4(1.0), glm::vec3(-to_origin)));
 
@@ -200,7 +206,7 @@ void TreeMaker::handleBranch(glm::mat4x4 current_total_transformation){
             // Three branchings.
             // The minimum theta angle between two branches is 35 degrees.  Maximum is 160.
             // The minimum phi angle is 25 degrees.  Maximum is 80.  Independent.
-            // The ratios range from .6 to .15.  Independent.
+            // The ratios range from .7 to .25.  Independent.
 
             float theta1 = randomFloat() * 360 * DEG_TO_RAD;
             float theta2 = theta1 + (randomFloat() * 125 + 35) * DEG_TO_RAD;
@@ -210,9 +216,9 @@ void TreeMaker::handleBranch(glm::mat4x4 current_total_transformation){
             float phi2 = (randomFloat() * 55 + 25) * DEG_TO_RAD;
             float phi3 = (randomFloat() * 55 + 25) * DEG_TO_RAD;
 
-            float ratio1 = randomFloat() * .45 + .15;
-            float ratio2 = randomFloat() * .45 + .15;
-            float ratio3 = randomFloat() * .45 + .15;
+            float ratio1 = randomFloat() * .45 + .25;
+            float ratio2 = randomFloat() * .45 + .25;
+            float ratio3 = randomFloat() * .45 + .25;
 
             phi_rotations.push_front(phi1);
             phi_rotations.push_front(phi2);
