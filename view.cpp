@@ -36,7 +36,7 @@ View::View(QWidget *parent) : QGLWidget(parent)
 
     m_treemaker = TreeMaker();
 
-    m_useNormalMap = true;
+    m_useNormalMap = false;
 
     m_OpenGLDidInit = false;
 }
@@ -329,7 +329,7 @@ void View::paintGL()
     float ambient[3] = {0.25f, 0.2f, 0.2f};
     float diffuse[3] = {1.0f, 1.0f, 1.0f};
     float specular[3] = {1.0f, 1.0f, 1.0f};
-    float shininess = 8.0f;
+    float shininess = 2.0f;
 
     glUniform3fv(m_uniformLocs["ambient_color"], 1, ambient);
     glUniform3fv(m_uniformLocs["diffuse_color"], 1, diffuse);

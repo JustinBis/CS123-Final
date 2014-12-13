@@ -62,11 +62,14 @@ void main(){
         ));
 
     // Light's direction
-    vec4 lightDir_cameraSpace = v * m * vec4(-1.0 * lightDirections[0], 1.0);
+    vec4 lightDir_cameraSpace = normalize(v * vec4(1.0 * lightDirections[0], 0.0));
     lightVec = TBN * vec3(lightDir_cameraSpace);
+    lightVec = normalize(lightVec);
 
-    //vec4 EyeDirection_cameraspace = v * m *
-    eyeVec = TBN * vec3(p * position_cameraSpace);
+    //vec4 EyeDirection_tangentspace
+    //eyeVec = TBN * vec3(normalize(vec4(0,0,0,1) - position_cameraSpace));
+    eyeVec = TBN * vec3(position_cameraSpace);
+    eyeVec = normalize(eyeVec);
 
     if (useArrowOffsets) {
         // Figure out the axis to use in order for the triangle to be billboarded correctly
@@ -80,7 +83,7 @@ void main(){
     if (useLighting) {
         color = ambient_color.xyz; // Add ambient component
 
-        for (int i = 0; i < MAX_LIGHTS; i++) {
+        for(int i = 0; i < MAX_LIGHTS; i++) {
             vec4 vertexToLight = vec4(0);
             // Point Light
             if (lightTypes[i] == 0) {

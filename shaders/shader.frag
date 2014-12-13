@@ -40,7 +40,7 @@ void main(){
     float diffuse = clamp( dot(TextureNormal_tangentspace, lightVec), 0.0, 1.0);
 
     vec3 lightReflection = normalize(-reflect(lightVec, TextureNormal_tangentspace));
-    float specular = pow(max(0.0, dot(eyeVec, lightReflection)), 2.0);
+    float specular = pow(max(0.0, dot(eyeVec, lightReflection)), shininess);
 
     vec3 normalcolor = vec3(0);
 
@@ -48,11 +48,16 @@ void main(){
     normalcolor += max(vec3(0), lightColors[0] * texColor * diffuse);
 
     // Add specular component
-    // normalcolor += max(vec3(0), lightColors[0] * specular_color * specular);
+    //normalcolor += max(vec3(0), lightColors[0] * specular_color * specular);
+
+    // Add ambient color
+    normalcolor += ambient_color;
 
     if(useNormalMap)
     {
         fragColor = vec4(normalcolor, 1.0);
+        //fragColor = vec4(vec3(dot(TextureNormal_tangentspace, lightVec)), 1.0); // For debugging
+
     }
     else
     {
