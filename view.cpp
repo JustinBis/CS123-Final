@@ -102,46 +102,6 @@ void View::initializeGL()
     glGenBuffers(1, &m_vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
 
-//    // Generate the triangle
-//    GLfloat vertexData[] = {
-//        -1, -1, 0, // Pos 1
-//        0, 0, 1, // Normal 1
-//        1, -1, 0, // Pos 2
-//        0, 0, 1, // Normal 2
-//        0, 1, 0, // Pos 3
-//        0, 0, 1, // Normal 3
-//        // START TRIANGLE TWO
-//        0, 0, 0,
-//        0, 0, 1,
-//        5, 0, 0,
-//        0, 0, 1,
-//        5, 5, 0,
-//        0, 0, 1
-//    };
-
-//    // Pass the vertex data to OpenGL
-//    glBufferData(GL_ARRAY_BUFFER, 6 * 6 * sizeof(GLfloat), vertexData, GL_STATIC_DRAW);
-
-//    // Tell the VAO about this buffer
-//    glEnableVertexAttribArray(glGetAttribLocation(m_shader, "position"));
-//    glEnableVertexAttribArray(glGetAttribLocation(m_shader, "normal"));
-//    glVertexAttribPointer(
-//                glGetAttribLocation(m_shader, "position"),
-//                3, // Num coords per position
-//                GL_FLOAT, // Type of data
-//                GL_FALSE, // Normalized?
-//                6 * sizeof(GLfloat), // Stride between entries
-//                (void *)0 // Start location offset in the buffer
-//                );
-//    glVertexAttribPointer(
-//                glGetAttribLocation(m_shader, "normal"),
-//                3, // Num coords per position
-//                GL_FLOAT, // Type of data
-//                GL_TRUE, // Normalized?
-//                6 * sizeof(GLfloat), // Stride between entries
-//                (void *)(sizeof(GLfloat) * 3) // Start location offset in the buffer
-//                );
-
     // Create the cylinder using the glh library
     std::cout << "Creating unit cylinder" << std::endl;
     initCylinder();
@@ -192,6 +152,8 @@ void View::initializeGL()
     std::cout << "Loading Textures" << std::endl;
     glEnable(GL_TEXTURE_2D);
     m_pineTexID = loadTexture(":/textures/pine.jpg");
+
+    glEnable(GL_DEPTH_TEST);
 
     // Unbind the vertex array
     glBindVertexArray(0);
@@ -254,7 +216,7 @@ void View::paintGL()
     setLight(light);
 
     // Set the uniforms
-    glUniform1i(m_uniformLocs["useLighting"], false);
+    glUniform1i(m_uniformLocs["useLighting"], true);
     glUniform1i(m_uniformLocs["useArrowOffsets"], GL_FALSE);
     glUniformMatrix4fv(m_uniformLocs["p"], 1, GL_FALSE,
             glm::value_ptr(m_camera->getProjectionMatrix()));
@@ -277,7 +239,7 @@ void View::paintGL()
     glUniform1f(m_uniformLocs["shininess"], shininess);
 
     // Set up the texture
-    glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_TEXTURE_2D);
     glUniform1i(m_uniformLocs["useTexture"], 1);
     glUniform1i(m_uniformLocs["tex"], 0); // maps with glActiveTexture, so this is GL_TEXTURE0
     glUniform1f(m_uniformLocs["blend"], 1.0f);
@@ -291,8 +253,6 @@ void View::paintGL()
     // TODO: apply a material and use a camera to pass variables to the shader
     // That way we actually draw something
     // Can set color in fragment shader for debugging
-//    glDrawArrays(GL_TRIANGLES, 0, 6);
-//    glBindVertexArray(0);
 
 
     // Draw the cylinder
@@ -300,8 +260,6 @@ void View::paintGL()
     // Render the entire cylinder at once
     glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
         m_cylinder.TotalIndex, GL_UNSIGNED_SHORT, (void *)0 );
-
-    //glDrawArrays(GL_TRIANGLES, 0, m_cylinder.VertexCount);
 
     glBindVertexArray(0);
 
