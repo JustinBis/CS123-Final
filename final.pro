@@ -19,6 +19,7 @@ SOURCES += main.cpp \
     glhlib_2_1_win/source/TBaseShape.cpp \
     glhlib_2_1_win/source/TCylinder2.cpp \
     glhlib_2_1_win/source/3DGraphicsLibrarySmall.cpp \
+    treemaker.cpp
 
 HEADERS += mainwindow.h \
     view.h \
@@ -176,7 +177,8 @@ HEADERS += mainwindow.h \
     glhlib_2_1_win/source/TBaseShape.h \
     glh3DGraphics.h \
     glhlib_2_1_win/source/glhlib.h \
-    glhlib_2_1_win/source/3DGraphicsLibrarySmall.h
+    glhlib_2_1_win/source/3DGraphicsLibrarySmall.h \
+    treemaker.h
 
 FORMS += mainwindow.ui
 
