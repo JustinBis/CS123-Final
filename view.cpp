@@ -18,6 +18,15 @@ View::View(QWidget *parent) : QGLWidget(parent)
 
     m_camera = new Camera();
 
+    // Make the camera look at the origin from a position of x = 0, y = 0, z = 2
+    m_camera->orientLook(
+                glm::vec4(-10.0f, 1.0f, -10.0f, 1.0f), // eye
+                glm::vec4(0.9f, -0.05f, 0.5f, 0.0f), // look
+                glm::vec4(0.0f, 1.0f, 0.0f, 0.0f) // up vector
+               );
+
+    m_camera->setClip(1.0f, 100.0f);
+
     m_treeBranches = new std::deque<glm::mat4x4>;
     m_treeLeaves = new std::deque<glm::mat4x4>;
 
@@ -36,6 +45,9 @@ View::~View()
 
         // Delete the clinder
         glhDeleteCylinderf2(&m_cylinder);
+
+        // Delete the skybox
+        delete m_skybox;
     }
 
     delete m_treeBranches;
@@ -74,75 +86,20 @@ void View::initializeGL()
     // secondary monitor.
     QCursor::setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
 
+    // GL enables
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_DEPTH_TEST);
+
     // Set up the shaders
     std::cout << "Loading Shaders" << std::endl;
     loadShaders();
 
-    // Create the cylinder using the glh library
+    // Create the cylinder
     std::cout << "Creating unit cylinder" << std::endl;
-    initCylinder();
+    makeCylinder();
 
-    std::cout << "Generating Buffers" << std::endl;
-
-    // Generate and bind the VAO
-    glGenVertexArrays(1, &m_vaoID);
-    glBindVertexArray(m_vaoID);
-
-    // Generate and bind the VBO
-    glGenBuffers(1, &m_vertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-
-    // Buffer the cylinder data
-    std::cout << "Buffering data" << std::endl;
-    glBufferData(GL_ARRAY_BUFFER, m_cylinder.VertexCount * sizeof(GLHVertex_VNT), m_cylinder.pVertex, GL_STATIC_DRAW);
-
-    // Tell the VAO about this buffer
-    glEnableVertexAttribArray(glGetAttribLocation(m_shader, "position"));
-    glEnableVertexAttribArray(glGetAttribLocation(m_shader, "normal"));
-    glEnableVertexAttribArray(glGetAttribLocation(m_shader, "texCoord"));
-    glVertexAttribPointer(
-                    glGetAttribLocation(m_shader, "position"),
-                    3, // Num coords per position
-                    GL_FLOAT, // Type of data
-                    GL_FALSE, // Normalized?
-                    sizeof(GLHVertex_VNT), // Stride between entries
-                    (void *)0 // Start location offset in the buffer
-                    );
-    glVertexAttribPointer(
-                    glGetAttribLocation(m_shader, "normal"),
-                    3, // Num coords per position
-                    GL_FLOAT, // Type of data
-                    GL_TRUE, // Normalized?
-                    sizeof(GLHVertex_VNT), // Stride between entries
-                    (void *)(3 * sizeof(float)) // Start location offset in the buffer
-                    );
-    glVertexAttribPointer(
-                    glGetAttribLocation(m_shader, "texCoord"),
-                    2, // Num coords per position
-                    GL_FLOAT, // Type of data
-                    GL_FALSE, // Normalized?
-                    sizeof(GLHVertex_VNT), // Stride between entries
-                    (void *)(6 * sizeof(float)) // Start location offset in the buffer
-                    );
-
-    // Unbind the vertex buffer
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // Create the Index Buffer Object
-    glGenBuffers(1, &m_IBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-    // The indicies are unsigned shorts
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_cylinder.TotalIndex * sizeof(unsigned short), m_cylinder.pIndex16Bit, GL_STATIC_DRAW);
-
-    // Load the textures
-    std::cout << "Loading Textures" << std::endl;
-    glEnable(GL_TEXTURE_2D);
-    m_pineTexID = loadTexture(":/textures/pine.jpg");
-
-    // Unbind the vertex array
-    glBindVertexArray(0);
-
-    glEnable(GL_DEPTH_TEST);
+    // Create the skybox
+    m_skybox = new Skybox();
 
     // Make a tree or three
     for(int i = 0; i < 3; i++){
@@ -199,6 +156,77 @@ void View::makeCylinder()
         return;
     }
 
+    // Initilize the cylinder
+    initCylinder();
+
+    std::cout << "Generating Cylinder Buffers" << std::endl;
+
+    // Generate and bind the VAO
+    glGenVertexArrays(1, &m_vaoID);
+    glBindVertexArray(m_vaoID);
+
+    // Generate and bind the VBO
+    glGenBuffers(1, &m_vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
+
+    // Buffer the cylinder data
+    std::cout << "Buffering data" << std::endl;
+    glBufferData(GL_ARRAY_BUFFER, m_cylinder.VertexCount * sizeof(GLHVertex_VNTT3T3), m_cylinder.pVertex, GL_STATIC_DRAW);
+
+    // Tell the VAO about this buffer
+    glEnableVertexAttribArray(glGetAttribLocation(m_shader, "position"));
+    glEnableVertexAttribArray(glGetAttribLocation(m_shader, "normal"));
+    glEnableVertexAttribArray(glGetAttribLocation(m_shader, "texCoord"));
+    glEnableVertexAttribArray(glGetAttribLocation(m_shader, "tangent"));
+    glVertexAttribPointer(
+                    glGetAttribLocation(m_shader, "position"),
+                    3, // Num coords per position
+                    GL_FLOAT, // Type of data
+                    GL_FALSE, // Normalized?
+                    sizeof(GLHVertex_VNTT3), // Stride between entries
+                    (void *)0 // Start location offset in the buffer
+                    );
+    glVertexAttribPointer(
+                    glGetAttribLocation(m_shader, "normal"),
+                    3, // Num coords per position
+                    GL_FLOAT, // Type of data
+                    GL_TRUE, // Normalized?
+                    sizeof(GLHVertex_VNTT3), // Stride between entries
+                    (void *)(3 * sizeof(float)) // Start location offset in the buffer
+                    );
+    glVertexAttribPointer(
+                    glGetAttribLocation(m_shader, "texCoord"),
+                    2, // Num coords per position
+                    GL_FLOAT, // Type of data
+                    GL_FALSE, // Normalized?
+                    sizeof(GLHVertex_VNTT3T3), // Stride between entries
+                    (void *)(6 * sizeof(float)) // Start location offset in the buffer
+                    );
+    glVertexAttribPointer(
+                    glGetAttribLocation(m_shader, "tangent"),
+                    3, // Num coords per position
+                    GL_FLOAT, // Type of data
+                    GL_FALSE, // Normalized?
+                    sizeof(GLHVertex_VNTT3T3), // Stride between entries
+                    (void *)(8 * sizeof(float)) // Start location offset in the buffer
+                    );
+
+    // Unbind the vertex buffer
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // Create the Index Buffer Object
+    glGenBuffers(1, &m_IBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
+    // The indicies are unsigned shorts
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_cylinder.TotalIndex * sizeof(unsigned short), m_cylinder.pIndex16Bit, GL_STATIC_DRAW);
+
+    // Load the textures
+    std::cout << "Loading Cylinder Textures" << std::endl;
+    m_pineTexID = loadTexture(":/textures/pine.jpg");
+    m_pineNormalMapID = loadTexture(":/textures/pine-normal.jpg");
+
+    // Unbind the vertex array
+    glBindVertexArray(0);
 }
 
 /**
@@ -209,10 +237,10 @@ void View::initCylinder()
     memset(&m_cylinder, 0, sizeof(glhCylinderObjectf2));
     m_cylinder.IsThereATop=true; m_cylinder.IsThereABottom=true;
     m_cylinder.RadiusA=1.0; m_cylinder.RadiusB=1.0; m_cylinder.Height=1.0;
-    m_cylinder.Stacks=20; m_cylinder.Slices=20;
+    m_cylinder.Stacks=10; m_cylinder.Slices=8;
     m_cylinder.IndexFormat=GLH_INDEXFORMAT_16BIT;
-    m_cylinder.VertexFormat=GLH_VERTEXFORMAT_VNT;
-    m_cylinder.TexCoordStyle[0]=1;
+    m_cylinder.VertexFormat=GLH_VERTEXFORMAT_VNTT3T3; // vertex normal texture tangent binormal
+    m_cylinder.TexCoordStyle[0]=1; // Generate tex coords
     m_cylinder.ScaleFactorS[0]=m_cylinder.ScaleFactorT[0]=1.0;
 
     glhCreateCylinderf2(&m_cylinder);
@@ -228,13 +256,28 @@ void View::generateTree()
     m_treemaker.makeTree();
 }
 
+/**
+ * @brief View::reloadTree will delete the current tree and generate a new tree
+ */
+void View::reloadTree()
+{
+    m_treeBranches->clear();
+    m_treeBranches->clear();
+
+    m_treemaker.reset(1.0f, m_treeBranches, m_treeLeaves);
+    m_treemaker.makeTree();
+}
+
 void View::paintGL()
 {
     // Draw a grey background so we can see unlight objects
-    glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
+    //glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // TODO: Implement the demo rendering here
+    // Draw the skybox
+    m_skybox->draw(m_camera);
 
     // Use the shader program
     glUseProgram(m_shader);
@@ -275,14 +318,23 @@ void View::paintGL()
     glUniform3fv(m_uniformLocs["specular_color"], 1, specular);
     glUniform1f(m_uniformLocs["shininess"], shininess);
 
-    // Set up the texture
-    //glEnable(GL_TEXTURE_2D);
+    // Use textures with no blending of the object color
     glUniform1i(m_uniformLocs["useTexture"], 1);
-    glUniform1i(m_uniformLocs["tex"], 0); // maps with glActiveTexture, so this is GL_TEXTURE0
     glUniform1f(m_uniformLocs["blend"], 1.0f);
 
+    // Set up the texture map
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_pineTexID);
+    glUniform1i(m_uniformLocs["tex"], 0); // maps with glActiveTexture, so this is GL_TEXTURE0
+
+    // Bind the normal map as well
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_pineNormalMapID);
+    glUniform1i(m_uniformLocs["normalMap"], 1); // maps with glActiveTexture, so this is GL_TEXTURE1
+
+    // Reset the active texture to texture 0, just in case
+    glActiveTexture(GL_TEXTURE0);
+
 
     // Draw the example triangle to screen
     glBindVertexArray(m_vaoID);
@@ -298,6 +350,7 @@ void View::paintGL()
     //glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
         //m_cylinder.TotalIndex, GL_UNSIGNED_SHORT, (void *)0 );
 
+    // Draw the tree
         for(size_t i = 0; i < m_treeBranches->size(); i++)
         {
             // Apply the modeling transformation
@@ -452,8 +505,8 @@ void View::mouseMoveEvent(QMouseEvent *event)
     // Update the camera's rotation based on mouse movements
     float cameraRotation = 1.0f / 16.0f;
 
-    m_camera->rotateU(cameraRotation * deltaY);
-    m_camera->rotateV(cameraRotation * deltaX);
+    m_camera->rotateU(cameraRotation * -deltaY);
+    m_camera->rotateV(cameraRotation * -deltaX);
 
 }
 
@@ -467,6 +520,17 @@ void View::keyPressEvent(QKeyEvent *event)
 
     // Set the key as pressed
     m_keys[event->key()] = true;
+
+    if(event->key() == Qt::Key_P)
+    {
+        std::cout << "Camera info: eye: " << m_camera->getEye().x << " " << m_camera->getEye().y << " " << m_camera->getEye().x;
+        std::cout << "look: " << m_camera->getLook().x << " " << m_camera->getLook().y << " " << m_camera->getLook().z << std::endl;
+    }
+
+    if(event->key() == Qt::Key_Space)
+    {
+        reloadTree();
+    }
 }
 
 void View::keyReleaseEvent(QKeyEvent *event)
@@ -487,6 +551,9 @@ void View::moveCamera(const float& seconds)
 
     // Rotate the camera around the y axis
     rotateCamera(seconds);
+
+    // Reset the up vector
+    m_camera->orientLook(m_camera->getEye(), m_camera->getLook(), glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
 }
 
 /**
@@ -500,23 +567,34 @@ void View::translateCamera(const float& seconds)
     // Speed of the camera's movement
     float movementSpeed = seconds * 2.0f;
 
+    glm::vec4 look = m_camera->getLook();
+    look.y = 0;
+
     // W and S translate the z plane
     if(m_keys[Qt::Key_W])
     {
-        vec.z -= movementSpeed;
+        vec += look * movementSpeed;
     }
     if(m_keys[Qt::Key_S])
     {
-        vec.z += movementSpeed;
+        vec += look * -movementSpeed;
     }
     // A and D translate the x plane
     if(m_keys[Qt::Key_A])
     {
-        vec.x -= movementSpeed;
+        vec += glm::rotateY(look, (float)(90.0f * M_PI / 180.0f)) * movementSpeed;
     }
     if(m_keys[Qt::Key_D])
     {
-        vec.x += movementSpeed;
+        vec += glm::rotateY(look, (float)(-90.0f * M_PI / 180.0f)) * movementSpeed;
+    }
+    if(m_keys[Qt::Key_Up])
+    {
+        vec.y += movementSpeed;
+    }
+    if(m_keys[Qt::Key_Down])
+    {
+        vec.y += -movementSpeed;
     }
 
     m_camera->translate(vec);
