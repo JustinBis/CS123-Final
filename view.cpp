@@ -2,6 +2,8 @@
 #include <QApplication>
 #include <QKeyEvent>
 
+#include "treemaker.h"
+
 View::View(QWidget *parent) : QGLWidget(parent)
 {
     // View needs all mouse move events, not just mouse drag events

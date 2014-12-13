@@ -1,7 +1,7 @@
 #include "treemaker.h"
 #include <math.h>
 
-//#define numIters 5;
+#define NUM_ITERS 5;
 #define DEG_TO_RAD (M_PI / 180)
 
 using namespace std;
@@ -19,7 +19,7 @@ void TreeMaker::reset(float trunkRadius, std::deque<glm::mat4x4> *shapeTransform
     m_shapeTransformations = shapeTransformations;
     m_leafTransformations = leafTransformations;
     L_string = "!";
-    numIters = 10;
+    numIters = NUM_ITERS;
     for(int i = 1; i <= numIters ; i++){
 
         cycleLString(i);
