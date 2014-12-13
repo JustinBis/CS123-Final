@@ -68,15 +68,15 @@ public:
 	T value;
 };
 
-int main()
-{
-/*
-#	if(GLM_ARCH & GLM_ARCH_SSE2)
-		test_simd();
-#	endif
-*/ 
+//int main()
+//{
+///*
+//#	if(GLM_ARCH & GLM_ARCH_SSE2)
+//		test_simd();
+//#	endif
+//*/
 
-	C<> c;
+//	C<> c;
 
-	return 0;
-}
+//	return 0;
+//}

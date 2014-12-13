@@ -8,8 +8,11 @@
 #include <QTime>
 #include <QTimer>
 
-#include "Common.h"
+// GL Helper Library
+//#include <glhlib.h>
+#include <glhlib_2_1_win/source/TCylinder.h>
 
+#include "Common.h"
 #include "camera.h"
 
 /*
@@ -63,6 +66,13 @@ private:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 
+    // Track if we have initilized or not
+    bool m_OpenGLDidInit;
+
+    // Have a single representative cylinder for the scene
+    glhCylinderObjectf2 m_cylinder;
+    void initCylinder();
+
     // Camera movement
     void moveCamera(const float &seconds);
     void translateCamera(const float &seconds);
@@ -76,6 +86,10 @@ private:
 
     // The ID of the main vao used for drawing
     GLuint m_vaoID;
+    // The buffer with our vertices
+    GLuint m_vertexBuffer;
+    // The index buffer object
+    GLuint m_IBO;
 
     // The program ID of the OpenGL shader
     GLuint m_shader;

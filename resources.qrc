@@ -3,4 +3,8 @@
         <file alias="default.frag">shaders/shader.frag</file>
         <file alias="default.vert">shaders/shader.vert</file>
     </qresource>
+    <qresource prefix="/textures">
+        <file alias="pine.jpg">textures/pine.jpg</file>
+        <file alias="pine-normal.jpg">textures/pine-normal.jpg</file>
+    </qresource>
 </RCC>
