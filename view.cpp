@@ -29,6 +29,7 @@ View::View(QWidget *parent) : QGLWidget(parent)
 
     on_rails = false;
     rails_flag = true;
+    look_flag = false;
 
     m_treeBranches = new std::deque<glm::mat4x4>;
     m_treeLeaves = new std::deque<glm::mat4x4>;
@@ -537,6 +538,9 @@ void View::keyPressEvent(QKeyEvent *event)
         on_rails = !on_rails;
         theta = 0;
     }
+    if(event->key() == Qt::Key_L){
+        look_flag = !look_flag;
+    }
 
     if(event->key() == Qt::Key_Space)
     {
@@ -581,7 +585,11 @@ void View::moveCamera(const float& seconds)
 
         //rotateCamera(seconds);
 
-        m_camera->orientLook(m_camera->getEye(), -m_camera->getEye(), glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
+        if(look_flag){
+            m_camera->orientLook(m_camera->getEye(), -m_camera->getEye(), glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
+        } else {
+            m_camera->orientLook(m_camera->getEye(), m_camera->getLook(), glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
+        }
 
         return;
     }

@@ -88,6 +88,7 @@ private:
     Camera* m_camera;
     bool on_rails;
     bool rails_flag;
+    bool look_flag;
     float theta;
 
     // Lighting functions
