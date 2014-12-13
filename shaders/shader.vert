@@ -3,10 +3,17 @@
 in vec3 position; // Position of the vertex
 in vec3 normal;   // Normal of the vertex
 in vec2 texCoord; // UV texture coordinates
+in vec3 tangent; // The tangent vector to the normal
+
 in float arrowOffset; // Sideways offset for billboarded normal arrows
 
 out vec3 color; // Computed color for this vertex
 out vec2 texc;
+
+// For normal mapping
+out vec3 lightVec; // Tangent space light vector
+out vec3 eyeVec; // Tangent space eye vector
+out vec3 halfVec;
 
 // Transformation matrices
 uniform mat4 p;
@@ -40,6 +47,41 @@ void main(){
     vec4 position_worldSpace = m * vec4(position, 1.0);
     vec4 normal_worldSpace = vec4(normalize(mat3(transpose(inverse(m))) * normal), 0);
 
+
+    // Begin normal mapping portion
+
+    // Building the matrix Eye Space -> Tangent Space
+    mat3 normalMatrix = mat3(transpose(inverse(v * m)));
+    vec3 n = normalize (normalMatrix * normal);
+    vec3 t = normalize (normalMatrix * tangent);
+    vec3 b = cross (n, t);
+
+    // Find the light direction for the first light only
+    vec3 lightDir = normalize(-1.0 * lightDirections[0]);
+
+    // transform light and half angle vectors by tangent basis
+    vec3 vec;
+    vec.x = dot (lightDir, t);
+    vec.y = dot (lightDir, b);
+    vec.z = dot (lightDir, n);
+    lightVec = normalize (vec);
+
+    vec3 vertexPosition = vec3(position_cameraSpace);
+    vec.x = dot (vertexPosition, t);
+    vec.y = dot (vertexPosition, b);
+    vec.z = dot (vertexPosition, n);
+    eyeVec = normalize(vec);
+
+    vec3 halfVector = normalize(vertexPosition + lightDir);
+    vec.x = dot (halfVector, t);
+    vec.y = dot (halfVector, b);
+    vec.z = dot (halfVector, n);
+
+    // No need to normalize, t,b,n and halfVector are normal vectors.
+    halfVec = vec;
+
+    // End normal mapping portion
+
     if (useArrowOffsets) {
         // Figure out the axis to use in order for the triangle to be billboarded correctly
         vec3 offsetAxis = normalize(cross(vec3(position_cameraSpace), vec3(normal_cameraSpace)));
@@ -48,6 +90,7 @@ void main(){
 
     gl_Position = p * position_cameraSpace;
 
+    // Calculate lighting
     if (useLighting) {
         color = ambient_color.xyz; // Add ambient component
 

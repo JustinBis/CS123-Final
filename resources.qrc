@@ -2,9 +2,17 @@
     <qresource prefix="/shaders">
         <file alias="default.frag">shaders/shader.frag</file>
         <file alias="default.vert">shaders/shader.vert</file>
+        <file alias="skybox.frag">shaders/skybox.frag</file>
+        <file alias="skybox.vert">shaders/skybox.vert</file>
     </qresource>
     <qresource prefix="/textures">
         <file alias="pine.jpg">textures/pine.jpg</file>
         <file alias="pine-normal.jpg">textures/pine-normal.jpg</file>
+        <file alias="mp_organic/organic_bk.png">textures/mp_organic/organic_bk.png</file>
+        <file alias="mp_organic/organic_dn.png">textures/mp_organic/organic_dn.png</file>
+        <file alias="mp_organic/organic_ft.png">textures/mp_organic/organic_ft.png</file>
+        <file alias="mp_organic/organic_lf.png">textures/mp_organic/organic_lf.png</file>
+        <file alias="mp_organic/organic_rt.png">textures/mp_organic/organic_rt.png</file>
+        <file alias="mp_organic/organic_up.png">textures/mp_organic/organic_up.png</file>
     </qresource>
 </RCC>

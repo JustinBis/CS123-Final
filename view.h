@@ -14,7 +14,7 @@
 
 #include "Common.h"
 #include "camera.h"
-
+#include "skybox.h"
 #include "treemaker.h"
 #include <deque>
 
@@ -102,6 +102,8 @@ private:
     GLuint m_IBO;
     // The id of the tree's texture
     GLuint m_pineTexID;
+    // The id of the tree's normal map
+    GLuint m_pineNormalMapID;
 
     // The program ID of the OpenGL shader
     GLuint m_shader;
@@ -111,6 +113,9 @@ private:
 
     // A mapping of Qt keys and if they are pressed or not
     std::map<int, bool> m_keys;
+
+    // For the skybox
+    Skybox *m_skybox;
 
     // For the tree maker
     std::deque<glm::mat4x4> *m_treeBranches;
