@@ -18,7 +18,7 @@ TreeMaker::~TreeMaker()
 
 void TreeMaker::reset(float trunkRadius, std::deque<glm::mat4x4> *shapeTransformations, std::deque<glm::mat4x4> *leafTransformations)
 {
-    m_trunkRadius = trunkRadius / 2;
+    m_trunkRadius = trunkRadius;
     current_branch_radius = m_trunkRadius;
     m_shapeTransformations = shapeTransformations;
     m_leafTransformations = leafTransformations;
@@ -146,8 +146,8 @@ void TreeMaker::handleBranch(glm::mat4x4 current_total_transformation){
             //        * glm::translate(glm::mat4x4(1.0), glm::vec3(-to_origin));
 
             // Adding the cylinder representing the branch to the sceneview graph.
-            m_shapeTransformations->push_front(glm::translate(glm::mat4x4(1.0), glm::vec3(m_x, m_y, 0))
-                        * glm::rotate(glm::mat4x4(1.0), (float)(90.0 * DEG_TO_RAD), glm::vec3(1,0,0)) * branch_trans * scale);
+            m_shapeTransformations->push_front(glm::translate(glm::mat4x4(1.0), glm::vec3(m_x, -5, m_y))
+                        * glm::rotate(glm::mat4x4(1.0), (float)(-90.0 * DEG_TO_RAD), glm::vec3(1,0,0)) * branch_trans * scale);
 
             // * glm::rotate(glm::mat4x4(1.0), (float)(90.0 * DEG_TO_RAD), glm::vec3(1,0,0))
 

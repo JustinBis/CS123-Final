@@ -265,7 +265,9 @@ void View::reloadTree()
     m_treeBranches->clear();
 
     m_treemaker.reset(1.0f, m_treeBranches, m_treeLeaves);
-    m_treemaker.makeTree();
+    for(int i = 0; i < 3; i++){
+        m_treemaker.makeTree();
+    }
 }
 
 void View::paintGL()
