@@ -4,6 +4,7 @@ in vec3 position; // Position of the vertex
 in vec3 normal;   // Normal of the vertex
 in vec2 texCoord; // UV texture coordinates
 in vec3 tangent; // The tangent vector to the normal
+in vec3 bitangent; // The bitangent vector to the normal
 
 in float arrowOffset; // Sideways offset for billboarded normal arrows
 
@@ -13,7 +14,7 @@ out vec2 texc;
 // For normal mapping
 out vec3 lightVec; // Tangent space light vector
 out vec3 eyeVec; // Tangent space eye vector
-out vec3 halfVec;
+//out vec3 halfVec;
 
 // Transformation matrices
 uniform mat4 p;
@@ -47,41 +48,26 @@ void main(){
     vec4 position_worldSpace = m * vec4(position, 1.0);
     vec4 normal_worldSpace = vec4(normalize(mat3(transpose(inverse(m))) * normal), 0);
 
-    /*
-    // Begin normal mapping portion
+    // Normal mapping round two
+    mat3 MV3x3 = mat3(transpose(inverse(v * m)));
 
-    // Building the matrix Eye Space -> Tangent Space
-    mat3 normalMatrix = mat3(transpose(inverse(v * m)));
-    vec3 n = normalize (normalMatrix * normal);
-    vec3 t = normalize (normalMatrix * tangent);
-    vec3 b = cross (n, t);
+    vec3 vertexNormal_cameraspace = MV3x3 * normalize(normal);
+    vec3 vertexTangent_cameraspace = MV3x3 * normalize(tangent);
+    vec3 vertexBitangent_cameraspace = MV3x3 * normalize(bitangent);
 
-    // Find the light direction for the first light only
-    vec3 lightDir = normalize(-1.0 * lightDirections[0]);
+    mat3 TBN = transpose(mat3(
+            vertexTangent_cameraspace,
+            vertexBitangent_cameraspace,
+            vertexNormal_cameraspace
+        ));
 
-    // transform light and half angle vectors by tangent basis
-    vec3 vec;
-    vec.x = dot (lightDir, t);
-    vec.y = dot (lightDir, b);
-    vec.z = dot (lightDir, n);
-    lightVec = normalize (vec);
+    // Light's direction
+    vec4 lightDir_cameraSpace = v * m * vec4(-1.0 * lightDirections[0], 1.0);
+    lightVec = TBN * vec3(lightDir_cameraSpace);
 
-    vec3 vertexPosition = vec3(position_cameraSpace);
-    vec.x = dot (vertexPosition, t);
-    vec.y = dot (vertexPosition, b);
-    vec.z = dot (vertexPosition, n);
-    eyeVec = normalize(vec);
+    //vec4 EyeDirection_cameraspace = v * m *
+    eyeVec = TBN * vec3(p * position_cameraSpace);
 
-    vec3 halfVector = normalize(vertexPosition + lightDir);
-    vec.x = dot (halfVector, t);
-    vec.y = dot (halfVector, b);
-    vec.z = dot (halfVector, n);
-
-    // No need to normalize, t,b,n and halfVector are normal vectors.
-    halfVec = vec;
-
-    // End normal mapping portion
-    */
     if (useArrowOffsets) {
         // Figure out the axis to use in order for the triangle to be billboarded correctly
         vec3 offsetAxis = normalize(cross(vec3(position_cameraSpace), vec3(normal_cameraSpace)));

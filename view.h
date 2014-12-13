@@ -109,6 +109,8 @@ private:
     // The id of the tree's normal map
     GLuint m_pineNormalMapID;
 
+    bool m_useNormalMap;
+
     // The program ID of the OpenGL shader
     GLuint m_shader;
 

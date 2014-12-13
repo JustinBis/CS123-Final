@@ -36,6 +36,8 @@ View::View(QWidget *parent) : QGLWidget(parent)
 
     m_treemaker = TreeMaker();
 
+    m_useNormalMap = true;
+
     m_OpenGLDidInit = false;
 }
 
@@ -146,6 +148,7 @@ void View::loadShaders()
     m_uniformLocs["tex"] = glGetUniformLocation(m_shader, "tex");
     m_uniformLocs["useArrowOffsets"] = glGetUniformLocation(m_shader, "useArrowOffsets");
     m_uniformLocs["blend"] = glGetUniformLocation(m_shader, "blend");
+    m_uniformLocs["useNormalMap"] = glGetUniformLocation(m_shader, "useNormalMap");
 }
 
 /**
@@ -182,6 +185,7 @@ void View::makeCylinder()
     glEnableVertexAttribArray(glGetAttribLocation(m_shader, "normal"));
     glEnableVertexAttribArray(glGetAttribLocation(m_shader, "texCoord"));
     glEnableVertexAttribArray(glGetAttribLocation(m_shader, "tangent"));
+    glEnableVertexAttribArray(glGetAttribLocation(m_shader, "bitangent"));
     glVertexAttribPointer(
                     glGetAttribLocation(m_shader, "position"),
                     3, // Num coords per position
@@ -214,6 +218,14 @@ void View::makeCylinder()
                     sizeof(GLHVertex_VNTT3T3), // Stride between entries
                     (void *)(8 * sizeof(float)) // Start location offset in the buffer
                     );
+    glVertexAttribPointer(
+                    glGetAttribLocation(m_shader, "bitangent"),
+                    3, // Num coords per position
+                    GL_FLOAT, // Type of data
+                    GL_FALSE, // Normalized?
+                    sizeof(GLHVertex_VNTT3T3), // Stride between entries
+                    (void *)(11 * sizeof(float)) // Start location offset in the buffer
+                    );
 
     // Unbind the vertex buffer
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -240,7 +252,7 @@ void View::initCylinder()
 {
     memset(&m_cylinder, 0, sizeof(glhCylinderObjectf2));
     m_cylinder.IsThereATop=true; m_cylinder.IsThereABottom=true;
-    m_cylinder.RadiusA=0.85; m_cylinder.RadiusB=1.0; m_cylinder.Height=1.0;
+    m_cylinder.RadiusA=0.9; m_cylinder.RadiusB=1.0; m_cylinder.Height=1.0;
     m_cylinder.Stacks=10; m_cylinder.Slices=8;
     m_cylinder.IndexFormat=GLH_INDEXFORMAT_16BIT;
     m_cylinder.VertexFormat=GLH_VERTEXFORMAT_VNTT3T3; // vertex normal texture tangent binormal
@@ -314,10 +326,10 @@ void View::paintGL()
 
     // Apply the default material for an object
     // All are specified in RGB order
-    float ambient[3] = {0.2f, 0.1f, 0.0f};
+    float ambient[3] = {0.0f, 0.0f, 0.0f};
     float diffuse[3] = {1.0f, 1.0f, 1.0f};
     float specular[3] = {1.0f, 1.0f, 1.0f};
-    float shininess = 64.0f;
+    float shininess = 8.0f;
 
     glUniform3fv(m_uniformLocs["ambient_color"], 1, ambient);
     glUniform3fv(m_uniformLocs["diffuse_color"], 1, diffuse);
@@ -338,19 +350,14 @@ void View::paintGL()
     glBindTexture(GL_TEXTURE_2D, m_pineNormalMapID);
     glUniform1i(m_uniformLocs["normalMap"], 1); // maps with glActiveTexture, so this is GL_TEXTURE1
 
+    // Are we using the normal map?
+    glUniform1i(m_uniformLocs["useNormalMap"], m_useNormalMap);
+
     // Reset the active texture to texture 0, just in case
     glActiveTexture(GL_TEXTURE0);
 
-
-    // Draw the example triangle to screen
-    glBindVertexArray(m_vaoID);
-
-    // TODO: apply a material and use a camera to pass variables to the shader
-    // That way we actually draw something
-    // Can set color in fragment shader for debugging
-
-
     // Draw the cylinder
+    glBindVertexArray(m_vaoID);
 
     // Render the entire cylinder at once
     //glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
@@ -546,6 +553,12 @@ void View::keyPressEvent(QKeyEvent *event)
     {
         reloadTree();
     }
+
+    if(event->key() == Qt::Key_N)
+    {
+        // Toggle normal maps
+        m_useNormalMap = !m_useNormalMap;
+    }
 }
 
 void View::keyReleaseEvent(QKeyEvent *event)
@@ -617,7 +630,7 @@ void View::translateCamera(const float& seconds)
     glm::vec4 vec = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
     // Speed of the camera's movement
-    float movementSpeed = seconds * 2.0f;
+    float movementSpeed = seconds * 4.0f;
 
     glm::vec4 look = m_camera->getLook();
     look.y = 0;
