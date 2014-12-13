@@ -1,4 +1,8 @@
 #include "treemaker.h"
+#include <math.h>
+
+//#define numIters 5;
+#define DEG_TO_RAD (M_PI / 180)
 
 using namespace std;
 
@@ -13,7 +17,12 @@ void TreeMaker::reset(float trunkRadius, std::deque<glm::mat4x4> *shapeTransform
     m_shapeTransformations = shapeTransformations;
     m_leafTransformations = leafTransformations;
     L_string = "!";
-    generateLString();
+    numIters = 10;
+    for(int i = 1; i <= numIters ; i++){
+
+        cycleLString(i, numIters);
+
+    }
 }
 
 void TreeMaker::cycleLString(int iterNum, int numIters){
@@ -56,7 +65,7 @@ void TreeMaker::cycleLString(int iterNum, int numIters){
 
     // Copy the iterated string over.
     L_string = "";
-    for(int i = 0; i < TEMP_MAX_STR_LENGTH; i++){
+    for(int i = 0; i < new_result.size(); i++){
         L_string += new_result[i];
     }
 }
@@ -82,23 +91,26 @@ void TreeMaker::handleBranch(glm::mat4x4 current_total_transformation){
         if(L_string[L_index] == '['){
 
             // This is where we need to recurse.
-            phi = phi_rotations.pop_front();
-            theta = theta_rotations.pop_front();
+            float phi = phi_rotations.front();
+            phi_rotations.pop_front();
+            float theta = theta_rotations.front();
+            theta_rotations.pop_front();
 
-            float branch_size_ratio = branch_size_ratios.pop_front;
+            float branch_size_ratio = branch_size_ratios.front();
+            branch_size_ratios.pop_front();
             current_branch_radius *= branch_size_ratio;
 
             // The randomly generated length of this branch will be between 5 and 15 times the diameter.
             float length = (randomFloat() * 20.0 + 10.0) * current_branch_radius;
 
             // Will transform object space to reside at the tip of the new branch.
-            glm::mat4x4 coord_translation = glm::translate(0.0, length, 0.0);
+            glm::mat4x4 coord_translation = glm::translate(glm::mat4x4(1.0), glm::vec3(0.0f, length, 0.0f));
             // The cylinder, being centered at the origin, needs a separate translation matrix.
-            glm::mat4x4 cyl_translation = glm::translate(0.0, length / 2, 0.0);
+            glm::mat4x4 cyl_translation = glm::translate(glm::mat4x4(1.0), glm::vec3(0.0, length / 2, 0.0));
             // Will transform object space so that the y-axis is aligned with the new branch. (angle, axis)
-            glm::mat4x4 rotation = glm::rotate(phi, sin(theta), 0.0, cos(theta));
+            glm::mat4x4 rotation = glm::rotate(glm::mat4x4(1.0), phi, glm::vec3(sin(theta), 0.0, cos(theta)));
             // Scale matrix in order to transform the cylinder itself.
-            glm::mat4x4 scale = glm::scale(current_branch_radius, length, current_branch_radius);
+            glm::mat4x4 scale = glm::scale(glm::mat4x4(1.0), glm::vec3(current_branch_radius, length, current_branch_radius));
 
             // Used to add the cylinder itself to the scenegraph.
             glm::mat4x4 branch_trans = cyl_translation * rotation * scale;
@@ -194,7 +206,7 @@ void TreeMaker::handleBranch(glm::mat4x4 current_total_transformation){
 
             // We do not translate or scale the leaf in object space.
             // We only need to rotate.
-            glm::mat4x4 rotation = glm::rotate(phi, sin(theta), 0.0, cos(theta));
+            glm::mat4x4 rotation = glm::rotate(glm::mat4x4(1.0), phi, glm::vec3(sin(theta), 0.0, cos(theta)));
 
             // Store the transformation matrix.
             m_leafTransformations->push_front(rotation * current_total_transformation);

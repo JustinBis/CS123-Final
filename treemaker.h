@@ -9,7 +9,7 @@ class TreeMaker{
 
 public:
     TreeMaker();
-    virtual ~TreeMaker();
+    ~TreeMaker();
 
     void reset(float trunkRadius, std::deque<glm::mat4x4> *shapeTransformations, std::deque<glm::mat4x4> *leafTransformations);
 
@@ -18,6 +18,7 @@ public:
 protected:
 
     void cycleLString(int iterNum, int numIters);
+    void handleBranch(glm::mat4x4 current_total_transformation);
 
     float m_trunkRadius;
 
@@ -26,6 +27,8 @@ protected:
 
     std::string L_string;
     int L_index;
+
+    int numIters;
 
     // Only ever use push/pop_front on these, turns them into a stack.
     std::deque<float> phi_rotations;
