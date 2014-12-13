@@ -2,9 +2,11 @@
 
 using namespace std;
 
+/*
 TreeMaker::TreeMaker()
 {
 }
+
 
 void TreeMaker::reset(float trunkRadius, std::deque<glm::mat4x4> *shapeTransformations, std::deque<glm::mat4x4> *leafTransformations)
 {
@@ -215,3 +217,4 @@ void TreeMaker::handleBranch(glm::mat4x4 current_total_transformation){
 
     }
 }
+*/

@@ -31,9 +31,6 @@ View::~View()
 
         // Delete the clinder
         glhDeleteCylinderf2(&m_cylinder);
-
-        // Shut down the glh library
-        //glhShutDownLibrary();
     }
 
     delete m_camera;
@@ -69,28 +66,13 @@ void View::initializeGL()
     // secondary monitor.
     QCursor::setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
 
-
     // Set up the shaders
     std::cout << "Loading Shaders" << std::endl;
-    m_shader = ResourceLoader::loadShaders(
-            ":/shaders/default.vert",
-            ":/shaders/default.frag");
+    loadShaders();
 
-    m_uniformLocs["p"]= glGetUniformLocation(m_shader, "p");
-    m_uniformLocs["m"]= glGetUniformLocation(m_shader, "m");
-    m_uniformLocs["v"]= glGetUniformLocation(m_shader, "v");
-    m_uniformLocs["allBlack"]= glGetUniformLocation(m_shader, "allBlack");
-    m_uniformLocs["useLighting"]= glGetUniformLocation(m_shader, "useLighting");
-    m_uniformLocs["ambient_color"] = glGetUniformLocation(m_shader, "ambient_color");
-    m_uniformLocs["diffuse_color"] = glGetUniformLocation(m_shader, "diffuse_color");
-    m_uniformLocs["specular_color"] = glGetUniformLocation(m_shader, "specular_color");
-    m_uniformLocs["shininess"] = glGetUniformLocation(m_shader, "shininess");
-    m_uniformLocs["useTexture"] = glGetUniformLocation(m_shader, "useTexture");
-    m_uniformLocs["tex"] = glGetUniformLocation(m_shader, "tex");
-    m_uniformLocs["useArrowOffsets"] = glGetUniformLocation(m_shader, "useArrowOffsets");
-    m_uniformLocs["blend"] = glGetUniformLocation(m_shader, "blend");
-
-    // For testing, draw a simple triangle to screen
+    // Create the cylinder using the glh library
+    std::cout << "Creating unit cylinder" << std::endl;
+    initCylinder();
 
     std::cout << "Generating Buffers" << std::endl;
 
@@ -101,10 +83,6 @@ void View::initializeGL()
     // Generate and bind the VBO
     glGenBuffers(1, &m_vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-
-    // Create the cylinder using the glh library
-    std::cout << "Creating unit cylinder" << std::endl;
-    initCylinder();
 
     // Buffer the cylinder data
     std::cout << "Buffering data" << std::endl;
@@ -153,10 +131,10 @@ void View::initializeGL()
     glEnable(GL_TEXTURE_2D);
     m_pineTexID = loadTexture(":/textures/pine.jpg");
 
-    glEnable(GL_DEPTH_TEST);
-
     // Unbind the vertex array
     glBindVertexArray(0);
+
+    glEnable(GL_DEPTH_TEST);
 
     // Mark the initilization as done
     m_OpenGLDidInit = true;
@@ -164,6 +142,51 @@ void View::initializeGL()
     std::cout << "Done Initilizing!" << std::endl;
 }
 
+
+/**
+ * @brief View::loadShaders loads the openGL shaders
+ * Should only be called once
+ */
+void View::loadShaders()
+{
+    // Don't load the shaders twice
+    if(m_OpenGLDidInit)
+    {
+        return;
+    }
+
+    m_shader = ResourceLoader::loadShaders(
+            ":/shaders/default.vert",
+            ":/shaders/default.frag");
+
+    m_uniformLocs["p"]= glGetUniformLocation(m_shader, "p");
+    m_uniformLocs["m"]= glGetUniformLocation(m_shader, "m");
+    m_uniformLocs["v"]= glGetUniformLocation(m_shader, "v");
+    m_uniformLocs["allBlack"]= glGetUniformLocation(m_shader, "allBlack");
+    m_uniformLocs["useLighting"]= glGetUniformLocation(m_shader, "useLighting");
+    m_uniformLocs["ambient_color"] = glGetUniformLocation(m_shader, "ambient_color");
+    m_uniformLocs["diffuse_color"] = glGetUniformLocation(m_shader, "diffuse_color");
+    m_uniformLocs["specular_color"] = glGetUniformLocation(m_shader, "specular_color");
+    m_uniformLocs["shininess"] = glGetUniformLocation(m_shader, "shininess");
+    m_uniformLocs["useTexture"] = glGetUniformLocation(m_shader, "useTexture");
+    m_uniformLocs["tex"] = glGetUniformLocation(m_shader, "tex");
+    m_uniformLocs["useArrowOffsets"] = glGetUniformLocation(m_shader, "useArrowOffsets");
+    m_uniformLocs["blend"] = glGetUniformLocation(m_shader, "blend");
+}
+
+/**
+ * @brief View::makeCylinder loads the unit cylinder into a buffer and assigns a VAO for it
+ * Should be called only once during initilization
+ */
+void View::makeCylinder()
+{
+    // Don't load the cylinder twice
+    if(m_OpenGLDidInit)
+    {
+        return;
+    }
+
+}
 
 /**
  * @brief View::initCylinder inits the member unit cylinder m_cylinder
@@ -180,15 +203,6 @@ void View::initCylinder()
     m_cylinder.ScaleFactorS[0]=m_cylinder.ScaleFactorT[0]=1.0;
 
     glhCreateCylinderf2(&m_cylinder);
-
-    /*
-    // Print out the first few texture coords
-    GLHVertex_VNT *verts = (GLHVertex_VNT *)m_cylinder.pVertex;
-    for(int i = 0; i < 500; i += 25)
-    {
-        std::cout << "Tex: s0: " << verts[i].s0 << " t0:" << verts[i].t0 << std::endl;
-    }
-    */
 }
 
 void View::paintGL()
