@@ -2,8 +2,6 @@
 #include <QApplication>
 #include <QKeyEvent>
 
-#include "treemaker.h"
-
 View::View(QWidget *parent) : QGLWidget(parent)
 {
     // View needs all mouse move events, not just mouse drag events
@@ -20,6 +18,11 @@ View::View(QWidget *parent) : QGLWidget(parent)
 
     m_camera = new Camera();
 
+    m_treeBranches = new std::deque<glm::mat4x4>;
+    m_treeLeaves = new std::deque<glm::mat4x4>;
+
+    m_treemaker = TreeMaker();
+
     m_OpenGLDidInit = false;
 }
 
@@ -34,6 +37,9 @@ View::~View()
         // Delete the clinder
         glhDeleteCylinderf2(&m_cylinder);
     }
+
+    delete m_treeBranches;
+    delete m_treeLeaves;
 
     delete m_camera;
 }
@@ -138,6 +144,9 @@ void View::initializeGL()
 
     glEnable(GL_DEPTH_TEST);
 
+    // Make a tree
+    generateTree();
+
     // Mark the initilization as done
     m_OpenGLDidInit = true;
 
@@ -207,6 +216,16 @@ void View::initCylinder()
     glhCreateCylinderf2(&m_cylinder);
 }
 
+
+/**
+ * @brief View::generateTree uses the member TreeMaker to make a tree
+ */
+void View::generateTree()
+{
+    m_treemaker.reset(1.0f, m_treeBranches, m_treeLeaves);
+    m_treemaker.makeTree();
+}
+
 void View::paintGL()
 {
     // Draw a grey background so we can see unlight objects
@@ -273,9 +292,24 @@ void View::paintGL()
 
     // Draw the cylinder
 
-    // Render the entire cylinder at once
-    glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
-        m_cylinder.TotalIndex, GL_UNSIGNED_SHORT, (void *)0 );
+//    // Render the entire cylinder at once
+//    glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
+//        m_cylinder.TotalIndex, GL_UNSIGNED_SHORT, (void *)0 );
+
+    for(size_t i = 0; i < m_treeBranches->size(); i++)
+    {
+        // Apply the modeling transformation
+        glUniformMatrix4fv(
+                    m_uniformLocs["m"], // Shader variable
+                    1, // Number of matricies
+                    GL_FALSE, //
+                    glm::value_ptr(m_treeBranches->at(i)) // Pointer to the first element
+                );
+
+        // Draw the cylinder
+        glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
+                m_cylinder.TotalIndex, GL_UNSIGNED_SHORT, (void *)0 );
+    }
 
     glBindVertexArray(0);
 

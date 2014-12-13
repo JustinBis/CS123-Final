@@ -11,6 +11,10 @@ TreeMaker::TreeMaker()
 {
 }
 
+TreeMaker::~TreeMaker()
+{
+}
+
 
 void TreeMaker::reset(float trunkRadius, std::deque<glm::mat4x4> *shapeTransformations, std::deque<glm::mat4x4> *leafTransformations)
 {

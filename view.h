@@ -15,6 +15,9 @@
 #include "Common.h"
 #include "camera.h"
 
+#include "treemaker.h"
+#include <deque>
+
 /*
  * Data for lights in a scene
  * From CS123SceneData.h in the projects
@@ -108,6 +111,13 @@ private:
 
     // A mapping of Qt keys and if they are pressed or not
     std::map<int, bool> m_keys;
+
+    // For the tree maker
+    std::deque<glm::mat4x4> *m_treeBranches;
+    std::deque<glm::mat4x4> *m_treeLeaves;
+    TreeMaker m_treemaker;
+
+    void generateTree();
 
 private slots:
     void tick();
