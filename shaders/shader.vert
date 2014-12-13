@@ -47,7 +47,7 @@ void main(){
     vec4 position_worldSpace = m * vec4(position, 1.0);
     vec4 normal_worldSpace = vec4(normalize(mat3(transpose(inverse(m))) * normal), 0);
 
-
+    /*
     // Begin normal mapping portion
 
     // Building the matrix Eye Space -> Tangent Space
@@ -81,7 +81,7 @@ void main(){
     halfVec = vec;
 
     // End normal mapping portion
-
+    */
     if (useArrowOffsets) {
         // Figure out the axis to use in order for the triangle to be billboarded correctly
         vec3 offsetAxis = normalize(cross(vec3(position_cameraSpace), vec3(normal_cameraSpace)));

@@ -236,7 +236,7 @@ void View::initCylinder()
 {
     memset(&m_cylinder, 0, sizeof(glhCylinderObjectf2));
     m_cylinder.IsThereATop=true; m_cylinder.IsThereABottom=true;
-    m_cylinder.RadiusA=1.0; m_cylinder.RadiusB=1.0; m_cylinder.Height=1.0;
+    m_cylinder.RadiusA=0.85; m_cylinder.RadiusB=1.0; m_cylinder.Height=1.0;
     m_cylinder.Stacks=10; m_cylinder.Slices=8;
     m_cylinder.IndexFormat=GLH_INDEXFORMAT_16BIT;
     m_cylinder.VertexFormat=GLH_VERTEXFORMAT_VNTT3T3; // vertex normal texture tangent binormal
