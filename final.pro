@@ -181,8 +181,11 @@ HEADERS += mainwindow.h \
 FORMS += mainwindow.ui
 
 
+# If on linux
+unix:!macx {
+    QMAKE_CXXFLAGS += -std=c++11 # Why does this break glm on mac?
+}
 # For local development
-#QMAKE_CXXFLAGS += -std=c++11 # Why does this break glm?
 #QMAKE_CXXFLAGS += -stdlib=libc++ # Use Clang's c++11 library # Or don't, thanks Apple
 QMAKE_CFLAGS_X86_64 += -mmacosx-version-min=10.7
 QMAKE_CXXFLAGS_X86_64 = $$QMAKE_CFLAGS_X86_64
