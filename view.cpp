@@ -25,7 +25,7 @@ View::View(QWidget *parent) : QGLWidget(parent)
                 glm::vec4(0.0f, 1.0f, 0.0f, 0.0f) // up vector
                );
 
-    m_camera->setClip(1.0f, 100.0f);
+    m_camera->setClip(1.0f, 150.0f);
 
     on_rails = false;
     rails_flag = true;
@@ -326,7 +326,7 @@ void View::paintGL()
 
     // Apply the default material for an object
     // All are specified in RGB order
-    float ambient[3] = {0.0f, 0.0f, 0.0f};
+    float ambient[3] = {0.25f, 0.2f, 0.2f};
     float diffuse[3] = {1.0f, 1.0f, 1.0f};
     float specular[3] = {1.0f, 1.0f, 1.0f};
     float shininess = 8.0f;
