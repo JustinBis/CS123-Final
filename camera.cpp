@@ -22,7 +22,7 @@ Camera::Camera()
     m_aspectRatio = 1.0f;
 
     // Init the clipping planes
-    setClip(1.0f, 30.0f);
+    setClip(1.0f, 60.0f);
 
 }
 

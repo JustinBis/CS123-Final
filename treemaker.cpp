@@ -1,7 +1,7 @@
 #include "treemaker.h"
 #include <math.h>
 
-#define NUM_ITERS 5;
+#define NUM_ITERS 6;
 #define DEG_TO_RAD (M_PI / 180)
 
 using namespace std;
@@ -18,11 +18,12 @@ TreeMaker::~TreeMaker()
 
 void TreeMaker::reset(float trunkRadius, std::deque<glm::mat4x4> *shapeTransformations, std::deque<glm::mat4x4> *leafTransformations)
 {
-    m_trunkRadius = trunkRadius;
+    m_trunkRadius = trunkRadius / 2;
     current_branch_radius = m_trunkRadius;
     m_shapeTransformations = shapeTransformations;
     m_leafTransformations = leafTransformations;
     L_string = "!";
+    L_index = 0;
     numIters = NUM_ITERS;
     for(int i = 1; i <= numIters ; i++){
 
@@ -34,7 +35,7 @@ void TreeMaker::reset(float trunkRadius, std::deque<glm::mat4x4> *shapeTransform
 void TreeMaker::cycleLString(int iterNum){
 
     std::vector<char> new_result;
-    int new_i = 0;
+    //int new_i = 0;
 
     int l = L_string.length();
 
@@ -48,22 +49,23 @@ void TreeMaker::cycleLString(int iterNum){
         } else if(L_string[i] == '!'){
 
             if(iterNum == numIters){
-                L_string.push_back('[');
-                L_string.push_back('x');
-                L_string.push_back(']');
+                new_result.push_back('[');
+                new_result.push_back('x');
+                new_result.push_back(']');
                 continue;
             }
 
-            new_result[new_i++] = '[';
-            int r = rand() % 3;
-            new_result[new_i++] = r + 97;
+            new_result.push_back('[');
+            int r = rand() % 2 + 1;
+            //int r = 2;
+            new_result.push_back(r + 97);
             for(int j = 0; j <= r; j++){
-                new_result[new_i++] = '!';
+                new_result.push_back('!');
             }
-            new_result[new_i++] = ']';
+            new_result.push_back(']');
 
         } else if(L_string[i] == 'x'){
-            new_result[new_i++] == 'x';
+            new_result.push_back('x');
         } else if(L_string[i] == '\0'){
             break;
         }
@@ -85,6 +87,10 @@ float randomFloat(){
 
 void TreeMaker::makeTree(){
     // Basically a wrapper for the branch function.
+    L_index = 0;
+    phi_rotations.push_front(0.0);
+    theta_rotations.push_front(0.0);
+    branch_size_ratios.push_front(1.0);
     handleBranch(glm::mat4x4(1.0));
 }
 
@@ -107,28 +113,44 @@ void TreeMaker::handleBranch(glm::mat4x4 current_total_transformation){
             current_branch_radius *= branch_size_ratio;
 
             // The randomly generated length of this branch will be between 5 and 15 times the diameter.
-            float length = (randomFloat() * 20.0 + 10.0) * current_branch_radius;
+            float length = (randomFloat() * 10.0 + 5.0) * current_branch_radius;
 
             // Will transform object space to reside at the tip of the new branch.
-            glm::mat4x4 coord_translation = glm::translate(glm::mat4x4(1.0), glm::vec3(0.0f, length, 0.0f));
+            glm::mat4x4 coord_translation = glm::translate(glm::mat4x4(1.0), glm::vec3(0.0f, 0.0f, length));
             // The cylinder, being centered at the origin, needs a separate translation matrix.
-            glm::mat4x4 cyl_translation = glm::translate(glm::mat4x4(1.0), glm::vec3(0.0, length / 2, 0.0));
+            glm::mat4x4 cyl_translation = glm::translate(glm::mat4x4(1.0), glm::vec3(0.0, 0.0, length / 2));
             // Will transform object space so that the y-axis is aligned with the new branch. (angle, axis)
-            glm::mat4x4 rotation = glm::rotate(glm::mat4x4(1.0), phi, glm::vec3(sin(theta), 0.0, cos(theta)));
+            glm::mat4x4 rotation = glm::rotate(glm::mat4x4(1.0), phi, glm::vec3(sin(theta), cos(theta), 0.0));
             // Scale matrix in order to transform the cylinder itself.
-            glm::mat4x4 scale = glm::scale(glm::mat4x4(1.0), glm::vec3(current_branch_radius, length, current_branch_radius));
+            glm::mat4x4 scale = glm::scale(glm::mat4x4(1.0), glm::vec3(current_branch_radius, current_branch_radius, length));
+
+            //glm::vec4 to_origin = current_total_transformation[3];
+            //to_origin.x = current_total_transformation[0].w;
+            //to_origin.y = current_total_transformation[1].w;
+            //to_origin.z = current_total_transformation[2].w;
+            //to_origin.w = 1.0;
+
+            glm::mat4x4 branch_trans = current_total_transformation * rotation * cyl_translation;
+
+            glm::mat4x4 coord_trans = current_total_transformation * rotation * coord_translation;
 
             // Used to add the cylinder itself to the scenegraph.
-            glm::mat4x4 branch_trans = cyl_translation * rotation * scale;
+            //glm::mat4x4 branch_trans = glm::translate(glm::mat4x4(1.0), glm::vec3(to_origin))
+            //        * cyl_translation * current_total_transformation * rotation;
             // And the tranformation to manipulate object space.
-            glm::mat4x4 coord_trans = coord_translation * rotation;
+            //glm::mat4x4 coord_trans = glm::translate(glm::mat4x4(1.0), glm::vec3(to_origin))
+            //        * coord_translation * current_total_transformation * rotation
+            //        * glm::translate(glm::mat4x4(1.0), glm::vec3(-to_origin));
 
             // Adding the cylinder representing the branch to the sceneview graph.
-            m_shapeTransformations->push_front(branch_trans * current_total_transformation);
+            m_shapeTransformations->push_front(branch_trans * scale);
+
+            //m_shapeTransformations->push_front(branch_trans * scale * glm::translate(glm::mat4x4(1.0), glm::vec3(-to_origin)));
 
             // Recurse.  Remember, there's no L_index increment at the beginning of the nested call.
             L_index++;
-            handleBranch(coord_trans * current_total_transformation);
+            handleBranch(coord_trans);
+            //handleBranch(coord_trans);
 
             // We need to recover this class-global variable's original value when the sub-recursion finishes.
             current_branch_radius /= branch_size_ratio;
@@ -140,14 +162,16 @@ void TreeMaker::handleBranch(glm::mat4x4 current_total_transformation){
         // The section to prepare for branchings.
         else if(L_string[L_index] == 'a'){
             // One branching, only slightly smaller than the parent.
-            // This branch may bend up to 45 degrees from the parent, and at any angle.
-            float phi = randomFloat() * 45 * DEG_TO_RAD;
+            // This branch may bend up to 60 degrees from the parent, and at any angle.
+            float phi = randomFloat() * 60 * DEG_TO_RAD;
             float theta = randomFloat() * 360 * DEG_TO_RAD;
+            //float phi = 90;
+            //float theta = 0;
 
             phi_rotations.push_front(phi);
             theta_rotations.push_front(theta);
 
-            branch_size_ratios.push_front(.9);
+            branch_size_ratios.push_front(.75);
         } else if(L_string[L_index] == 'b'){
             // Two branchings.
             // I balance the sizes and directions of the two branches.
@@ -172,7 +196,7 @@ void TreeMaker::handleBranch(glm::mat4x4 current_total_transformation){
             theta_rotations.push_front(theta2);
             branch_size_ratios.push_front(ratio1);
             branch_size_ratios.push_front(ratio2);
-        } else if(L_string[L_index] == 'b'){
+        } else if(L_string[L_index] == 'c'){
             // Three branchings.
             // The minimum theta angle between two branches is 35 degrees.  Maximum is 160.
             // The minimum phi angle is 25 degrees.  Maximum is 80.  Independent.
@@ -212,7 +236,7 @@ void TreeMaker::handleBranch(glm::mat4x4 current_total_transformation){
 
             // We do not translate or scale the leaf in object space.
             // We only need to rotate.
-            glm::mat4x4 rotation = glm::rotate(glm::mat4x4(1.0), phi, glm::vec3(sin(theta), 0.0, cos(theta)));
+            glm::mat4x4 rotation = glm::rotate(glm::mat4x4(1.0), phi, glm::vec3(sin(theta), cos(theta), 0.0));
 
             // Store the transformation matrix.
             m_leafTransformations->push_front(rotation * current_total_transformation);
