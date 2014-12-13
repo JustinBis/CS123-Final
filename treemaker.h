@@ -17,7 +17,7 @@ public:
 
 protected:
 
-    void cycleLString(int iterNum, int numIters);
+    void cycleLString(int iterNum);
     void handleBranch(glm::mat4x4 current_total_transformation);
 
     float m_trunkRadius;

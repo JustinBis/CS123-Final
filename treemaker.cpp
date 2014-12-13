@@ -6,7 +6,7 @@
 
 using namespace std;
 
-/*
+
 TreeMaker::TreeMaker()
 {
 }
@@ -22,12 +22,12 @@ void TreeMaker::reset(float trunkRadius, std::deque<glm::mat4x4> *shapeTransform
     numIters = 10;
     for(int i = 1; i <= numIters ; i++){
 
-        cycleLString(i, numIters);
+        cycleLString(i);
 
     }
 }
 
-void TreeMaker::cycleLString(int iterNum, int numIters){
+void TreeMaker::cycleLString(int iterNum){
 
     std::vector<char> new_result;
     int new_i = 0;
@@ -229,4 +229,3 @@ void TreeMaker::handleBranch(glm::mat4x4 current_total_transformation){
 
     }
 }
-*/
