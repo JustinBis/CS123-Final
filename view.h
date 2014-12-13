@@ -66,6 +66,10 @@ private:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 
+    // Initilization functions
+    void loadShaders();
+    void makeCylinder();
+
     // Track if we have initilized or not
     bool m_OpenGLDidInit;
 
