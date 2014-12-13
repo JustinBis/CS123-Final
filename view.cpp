@@ -153,6 +153,7 @@ void View::initializeGL()
     // Tell the VAO about this buffer
     glEnableVertexAttribArray(glGetAttribLocation(m_shader, "position"));
     glEnableVertexAttribArray(glGetAttribLocation(m_shader, "normal"));
+    glEnableVertexAttribArray(glGetAttribLocation(m_shader, "texCoord"));
     glVertexAttribPointer(
                     glGetAttribLocation(m_shader, "position"),
                     3, // Num coords per position
@@ -266,7 +267,7 @@ void View::paintGL()
     // Apply the default material for an object
     // All are specified in RGB order
     float ambient[3] = {0.2f, 0.1f, 0.0f};
-    float diffuse[3] = {1.0f, 0.5f, 0.0f};
+    float diffuse[3] = {1.0f, 1.0f, 1.0f};
     float specular[3] = {1.0f, 1.0f, 1.0f};
     float shininess = 64.0f;
 
@@ -278,12 +279,11 @@ void View::paintGL()
     // Set up the texture
     glEnable(GL_TEXTURE_2D);
     glUniform1i(m_uniformLocs["useTexture"], 1);
-    glUniform1i(m_uniformLocs["tex"], 1);
+    glUniform1i(m_uniformLocs["tex"], 0); // maps with glActiveTexture, so this is GL_TEXTURE0
     glUniform1f(m_uniformLocs["blend"], 1.0f);
 
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m_pineTexID);
     glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_pineTexID);
 
     // Draw the example triangle to screen
     glBindVertexArray(m_vaoID);
