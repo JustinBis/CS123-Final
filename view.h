@@ -123,6 +123,7 @@ private:
     TreeMaker m_treemaker;
 
     void generateTree();
+    void reloadTree();
 
 private slots:
     void tick();

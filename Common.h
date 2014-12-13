@@ -21,6 +21,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 // glu.h in different location on macs
 #ifdef __APPLE__

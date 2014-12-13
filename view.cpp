@@ -20,8 +20,8 @@ View::View(QWidget *parent) : QGLWidget(parent)
 
     // Make the camera look at the origin from a position of x = 0, y = 0, z = 2
     m_camera->orientLook(
-                glm::vec4(0.0f, 0.0f, 4.0f, 1.0f), // eye
-                glm::vec4(0.0f, 0.0f, -1.0f, 0.0f), // look
+                glm::vec4(-10.0f, 1.0f, -10.0f, 1.0f), // eye
+                glm::vec4(0.9f, -0.05f, 0.5f, 0.0f), // look
                 glm::vec4(0.0f, 1.0f, 0.0f, 0.0f) // up vector
                );
 
@@ -102,7 +102,7 @@ void View::initializeGL()
     m_skybox = new Skybox();
 
     // Make a tree
-    //generateTree();
+    generateTree();
 
     // Mark the initilization as done
     m_OpenGLDidInit = true;
@@ -235,7 +235,7 @@ void View::initCylinder()
     memset(&m_cylinder, 0, sizeof(glhCylinderObjectf2));
     m_cylinder.IsThereATop=true; m_cylinder.IsThereABottom=true;
     m_cylinder.RadiusA=1.0; m_cylinder.RadiusB=1.0; m_cylinder.Height=1.0;
-    m_cylinder.Stacks=20; m_cylinder.Slices=20;
+    m_cylinder.Stacks=10; m_cylinder.Slices=8;
     m_cylinder.IndexFormat=GLH_INDEXFORMAT_16BIT;
     m_cylinder.VertexFormat=GLH_VERTEXFORMAT_VNTT3T3; // vertex normal texture tangent binormal
     m_cylinder.TexCoordStyle[0]=1; // Generate tex coords
@@ -254,13 +254,25 @@ void View::generateTree()
     m_treemaker.makeTree();
 }
 
+/**
+ * @brief View::reloadTree will delete the current tree and generate a new tree
+ */
+void View::reloadTree()
+{
+    m_treeBranches->clear();
+    m_treeBranches->clear();
+
+    m_treemaker.reset(1.0f, m_treeBranches, m_treeLeaves);
+    m_treemaker.makeTree();
+}
+
 void View::paintGL()
 {
     // Draw a grey background so we can see unlight objects
-    glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
 
-    // TODO: Implement the demo rendering here
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw the skybox
     m_skybox->draw(m_camera);
@@ -447,8 +459,8 @@ void View::mouseMoveEvent(QMouseEvent *event)
     // Update the camera's rotation based on mouse movements
     float cameraRotation = 1.0f / 16.0f;
 
-    m_camera->rotateU(cameraRotation * deltaY);
-    m_camera->rotateV(cameraRotation * deltaX);
+    m_camera->rotateU(cameraRotation * -deltaY);
+    m_camera->rotateV(cameraRotation * -deltaX);
 
 }
 
@@ -462,6 +474,17 @@ void View::keyPressEvent(QKeyEvent *event)
 
     // Set the key as pressed
     m_keys[event->key()] = true;
+
+    if(event->key() == Qt::Key_P)
+    {
+        std::cout << "Camera info: eye: " << m_camera->getEye().x << " " << m_camera->getEye().y << " " << m_camera->getEye().x;
+        std::cout << "look: " << m_camera->getLook().x << " " << m_camera->getLook().y << " " << m_camera->getLook().z << std::endl;
+    }
+
+    if(event->key() == Qt::Key_Space)
+    {
+        reloadTree();
+    }
 }
 
 void View::keyReleaseEvent(QKeyEvent *event)
@@ -498,23 +521,26 @@ void View::translateCamera(const float& seconds)
     // Speed of the camera's movement
     float movementSpeed = seconds * 2.0f;
 
+    glm::vec4 look = m_camera->getLook();
+    look.y = 0;
+
     // W and S translate the z plane
     if(m_keys[Qt::Key_W])
     {
-        vec.z -= movementSpeed;
+        vec += look * movementSpeed;
     }
     if(m_keys[Qt::Key_S])
     {
-        vec.z += movementSpeed;
+        vec += look * -movementSpeed;
     }
     // A and D translate the x plane
     if(m_keys[Qt::Key_A])
     {
-        vec.x -= movementSpeed;
+        vec += glm::rotateY(look, (float)(90.0f * M_PI / 180.0f)) * movementSpeed;
     }
     if(m_keys[Qt::Key_D])
     {
-        vec.x += movementSpeed;
+        vec += glm::rotateY(look, (float)(-90.0f * M_PI / 180.0f)) * movementSpeed;
     }
     if(m_keys[Qt::Key_Up])
     {
@@ -522,7 +548,7 @@ void View::translateCamera(const float& seconds)
     }
     if(m_keys[Qt::Key_Down])
     {
-        vec.y -= movementSpeed;
+        vec.y += -movementSpeed;
     }
 
     m_camera->translate(vec);
