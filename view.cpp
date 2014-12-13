@@ -332,36 +332,25 @@ void View::paintGL()
 
     // Draw the cylinder
 
-    // Render the entire cylinder at once
-    glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
-        m_cylinder.TotalIndex, GL_UNSIGNED_SHORT, (void *)0 );
+//    // Render the entire cylinder at once
+//    glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
+//        m_cylinder.TotalIndex, GL_UNSIGNED_SHORT, (void *)0 );
 
-    // Apply the modeling transformation
-    glm::mat4 myMat = glm::translate(glm::vec3(0.0f, 3.0f, 0.0f));
-    glUniformMatrix4fv(
-                m_uniformLocs["m"], // Shader variable
-                1, // Number of matricies
-                GL_FALSE, //
-                glm::value_ptr(myMat) // Pointer to the first element
-            );
+    // Draw the tree
+        for(size_t i = 0; i < m_treeBranches->size(); i++)
+        {
+            // Apply the modeling transformation
+            glUniformMatrix4fv(
+                        m_uniformLocs["m"], // Shader variable
+                        1, // Number of matricies
+                        GL_FALSE, //
+                        glm::value_ptr(m_treeBranches->at(i)) // Pointer to the first element
+                    );
 
-    glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
-        m_cylinder.TotalIndex, GL_UNSIGNED_SHORT, (void *)0 );
-
-//    for(size_t i = 0; i < m_treeBranches->size(); i++)
-//    {
-//        // Apply the modeling transformation
-//        glUniformMatrix4fv(
-//                    m_uniformLocs["m"], // Shader variable
-//                    1, // Number of matricies
-//                    GL_FALSE, //
-//                    glm::value_ptr(m_treeBranches->at(i)) // Pointer to the first element
-//                );
-
-//        // Draw the cylinder
-//        glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
-//                m_cylinder.TotalIndex, GL_UNSIGNED_SHORT, (void *)0 );
-//    }
+            // Draw the cylinder
+            glDrawRangeElements(GL_TRIANGLES, m_cylinder.Start_DrawRangeElements, m_cylinder.End_DrawRangeElements,
+                    m_cylinder.TotalIndex, GL_UNSIGNED_SHORT, (void *)0 );
+        }
 
     glBindVertexArray(0);
 
