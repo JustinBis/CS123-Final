@@ -189,9 +189,9 @@ void TreeMaker::handleBranch(glm::mat4x4 current_total_transformation){
             float theta1 = randomFloat() * 360 * DEG_TO_RAD;
             float theta2 = theta1 + (180 * DEG_TO_RAD);
 
-            // The ratios can be between .95 and .25, with an average of .65.
-            float ratio1 = randomFloat() * .70 + .25;
-            float ratio2 = 1.3 - ratio1;
+            // The ratios can be between .9 and .3, with an average of .6.
+            float ratio1 = randomFloat() * .6 + .3;
+            float ratio2 = 1.2 - ratio1;
 
             float phi1 = (1.0 - ratio1) * 45 * DEG_TO_RAD;
             float phi2 = (1.0 - ratio2) * 45 * DEG_TO_RAD;

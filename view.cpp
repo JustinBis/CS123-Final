@@ -27,6 +27,9 @@ View::View(QWidget *parent) : QGLWidget(parent)
 
     m_camera->setClip(1.0f, 100.0f);
 
+    on_rails = false;
+    rails_flag = true;
+
     m_treeBranches = new std::deque<glm::mat4x4>;
     m_treeLeaves = new std::deque<glm::mat4x4>;
 
@@ -102,7 +105,7 @@ void View::initializeGL()
     m_skybox = new Skybox();
 
     // Make a tree or three
-    for(int i = 0; i < 3; i++){
+    for(int i = 0; i < 5; i++){
         generateTree();
     }
 
@@ -265,7 +268,7 @@ void View::reloadTree()
     m_treeBranches->clear();
 
     m_treemaker.reset(1.0f, m_treeBranches, m_treeLeaves);
-    for(int i = 0; i < 3; i++){
+    for(int i = 0; i < 5; i++){
         m_treemaker.makeTree();
     }
 }
@@ -529,6 +532,12 @@ void View::keyPressEvent(QKeyEvent *event)
         std::cout << "look: " << m_camera->getLook().x << " " << m_camera->getLook().y << " " << m_camera->getLook().z << std::endl;
     }
 
+    if(event->key() == Qt::Key_C)
+    {
+        on_rails = !on_rails;
+        theta = 0;
+    }
+
     if(event->key() == Qt::Key_Space)
     {
         reloadTree();
@@ -544,10 +553,43 @@ void View::keyReleaseEvent(QKeyEvent *event)
 /**
  * @brief View::moveCamera
  * @param seconds number of seconds since the last tick (frame update)
- * Updates the camera's location based on the pressed keys and the passsed number of seconds
+ * Updates the camera's location based on the pressed keys and the passed number of seconds
  */
 void View::moveCamera(const float& seconds)
 {
+    if(on_rails){
+        // Rotate speed is 10 degrees a second.
+
+        glm::vec4 pos1;
+        glm::vec4 pos2;
+        glm::vec4 dist;
+
+        if(rails_flag){
+            rails_flag = false;
+            pos1 = m_camera->getEye();
+            pos2 = glm::vec4(0, 0, 24, 0);
+        } else {
+            float angleSpeed = seconds * 10.0f * M_PI / 180;
+            pos1 = glm::vec4(24 * sin(theta), 0, 24 * cos(theta), 0);
+            theta += angleSpeed;
+            pos2 = glm::vec4(24 * sin(theta), 0, 24 * cos(theta), 0);
+        }
+
+        dist = pos2 - pos1;
+
+        m_camera->translate(dist);
+
+        //rotateCamera(seconds);
+
+        m_camera->orientLook(m_camera->getEye(), -m_camera->getEye(), glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
+
+        return;
+    }
+
+    if(!rails_flag){
+        rails_flag = true;
+    }
+
     // Move the camera along the xz plane
     translateCamera(seconds);
 

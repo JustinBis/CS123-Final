@@ -86,6 +86,9 @@ private:
     void rotateCamera(const float &seconds);
 
     Camera* m_camera;
+    bool on_rails;
+    bool rails_flag;
+    float theta;
 
     // Lighting functions
     void clearLights();
